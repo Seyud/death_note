@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="GlobalSound">content://media/internal/audio/media/45</string>
+    <string name="GlobalSoundPath">/system/media/audio/notifications/Tritone.ogg</string>
+    <boolean name="EnableAll" value="true" />
+</map>

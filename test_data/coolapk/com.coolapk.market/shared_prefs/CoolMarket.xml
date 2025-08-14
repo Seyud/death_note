@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="uid">666888</string>
+    <string name="username">cooluser1</string>
+    <string name="token">abc123def456</string>
+    <boolean name="isLogin" value="true" />
+</map>

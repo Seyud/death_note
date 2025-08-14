@@ -8,7 +8,6 @@ use std::fmt;
 pub trait IdentificationResult: fmt::Debug + Send + Sync {
     fn uid(&self) -> &str;
     fn source(&self) -> &str;
-    fn details(&self) -> String;
 }
 
 /// 识别器trait，所有识别器都必须实现此trait
@@ -31,62 +30,19 @@ pub trait Identifier: Send + Sync {
 pub struct GenericIdentificationResult {
     pub uid: String,
     pub source: String,
-    pub package_name: Option<String>,
-    pub config_path: Option<String>,
-    pub additional_info: Vec<(String, String)>,
 }
 
 impl IdentificationResult for GenericIdentificationResult {
     fn uid(&self) -> &str {
         &self.uid
     }
-
     fn source(&self) -> &str {
         &self.source
-    }
-
-    fn details(&self) -> String {
-        let mut details = format!("来源: {}", self.source);
-
-        if let Some(pkg) = &self.package_name {
-            details.push_str(&format!(", 包名: {}", pkg));
-        }
-
-        if let Some(path) = &self.config_path {
-            details.push_str(&format!(", 配置文件: {}", path));
-        }
-
-        for (key, value) in &self.additional_info {
-            details.push_str(&format!(", {}: {}", key, value));
-        }
-
-        details
     }
 }
 
 impl GenericIdentificationResult {
     pub fn new(uid: String, source: String) -> Self {
-        Self {
-            uid,
-            source,
-            package_name: None,
-            config_path: None,
-            additional_info: Vec::new(),
-        }
-    }
-
-    pub fn with_package_name(mut self, package_name: String) -> Self {
-        self.package_name = Some(package_name);
-        self
-    }
-
-    pub fn with_config_path(mut self, config_path: String) -> Self {
-        self.config_path = Some(config_path);
-        self
-    }
-
-    pub fn with_additional_info(mut self, key: String, value: String) -> Self {
-        self.additional_info.push((key, value));
-        self
+        Self { uid, source }
     }
 }

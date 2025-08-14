@@ -30,6 +30,19 @@ impl AsyncGuidanceSystem {
     ) -> GuidanceDecision {
         println!("🎯 异步制导系统处理中...");
 
+        // 统计所有识别结果
+        let mut total_uids = 0;
+        for (source, source_results) in &results {
+            total_uids += source_results.len();
+            if !source_results.is_empty() {
+                println!("   📊 {}: {} 个UID待检查", source, source_results.len());
+            }
+        }
+
+        if total_uids > 0 {
+            println!("   🔍 开始黑名单检查...");
+        }
+
         let mut blacklisted_results = Vec::new();
         let mut summary = HashMap::new();
 
@@ -53,7 +66,6 @@ impl AsyncGuidanceSystem {
                     blacklisted_results.push(BlacklistedResult {
                         source: source_name.to_string(),
                         uid: uid.to_string(),
-                        details: result.details(),
                     });
                     source_blacklisted.push(uid.to_string());
                 }
@@ -73,10 +85,7 @@ impl AsyncGuidanceSystem {
                 blacklisted_results.len()
             );
             for result in &blacklisted_results {
-                println!(
-                    "   ⚠️ {}: {} ({})",
-                    result.source, result.uid, result.details
-                );
+                println!("   ⚠️ {}: {}", result.source, result.uid);
             }
 
             GuidanceDecision::Execute {
@@ -178,7 +187,6 @@ pub enum GuidanceDecision {
 pub struct BlacklistedResult {
     pub source: String,
     pub uid: String,
-    pub details: String,
 }
 
 /// 制导结果

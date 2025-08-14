@@ -2,6 +2,38 @@ mod blacklist;
 mod guidance_async;
 mod identification;
 
+use std::collections::HashMap;
+
+/// 显示所有识别到的UID
+fn display_all_identified_uids(
+    results: &HashMap<String, Vec<Box<dyn identification::IdentificationResult>>>,
+) {
+    println!();
+    println!("📋 识别结果汇总:");
+
+    if results.is_empty() {
+        println!("   ❌ 未识别到任何UID");
+        return;
+    }
+
+    let mut total_count = 0;
+
+    for (source, source_results) in results {
+        if !source_results.is_empty() {
+            println!("   📱 {} ({} 个UID):", source, source_results.len());
+            total_count += source_results.len();
+
+            for (index, result) in source_results.iter().enumerate() {
+                // 只显示 UID
+                println!("      {}. {}", index + 1, result.uid());
+            }
+            println!();
+        }
+    }
+
+    println!("✅ 总计识别到 {} 个UID", total_count);
+}
+
 #[tokio::main]
 async fn main() {
     println!("death_note - 异步并行识别系统");
@@ -18,6 +50,9 @@ async fn main() {
 
     // 并行执行所有识别器
     let results = manager.run_all().await;
+
+    // 显示所有识别到的UID
+    display_all_identified_uids(&results);
 
     // 使用异步制导系统处理结果
     let guidance_system = guidance_async::AsyncGuidanceSystem::new();
