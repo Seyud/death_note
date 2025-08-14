@@ -61,7 +61,8 @@ def copy_binary_to_output():
         sys.exit(1)
 
 def main():
-    print("Android Rust项目构建脚本 (仅64位)")
+    print("Death Note 构建脚本 (仅64位)")
+
     check_ndk_path()
     add_android_target()
     run_fmt_and_clippy()
