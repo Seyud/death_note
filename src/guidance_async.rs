@@ -1,4 +1,4 @@
-use crate::blacklist_system::BlacklistSystem;
+use crate::blacklist::BlacklistSystem;
 use crate::identification::IdentificationResult;
 use std::collections::HashMap;
 

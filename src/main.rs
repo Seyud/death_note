@@ -1,10 +1,10 @@
-mod blacklist_system;
+mod blacklist;
 mod guidance_async;
 mod identification;
 
 #[tokio::main]
 async fn main() {
-    println!("Android Rust Project - 异步并行识别系统");
+    println!("death_note - 异步并行识别系统");
     println!();
 
     // 创建识别管理器
