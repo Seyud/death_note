@@ -44,31 +44,10 @@ impl BlacklistSystem {
     pub fn is_qq_blacklisted(&self, qq_number: &str) -> bool {
         self.qq_blacklist.contains(&qq_number.to_string())
     }
+}
 
-    /// 获取所有黑名单中的酷安ID
-    pub fn get_blacklisted_coolapk_ids(&self, found_ids: &[String]) -> Vec<String> {
-        found_ids
-            .iter()
-            .filter(|id| self.is_coolapk_blacklisted(id))
-            .cloned()
-            .collect()
-    }
-
-    /// 获取所有黑名单中的Telegram ID
-    pub fn get_blacklisted_telegram_ids(&self, found_ids: &[String]) -> Vec<String> {
-        found_ids
-            .iter()
-            .filter(|id| self.is_telegram_blacklisted(id))
-            .cloned()
-            .collect()
-    }
-
-    /// 获取所有黑名单中的QQ号
-    pub fn get_blacklisted_qq_ids(&self, found_ids: &[String]) -> Vec<String> {
-        found_ids
-            .iter()
-            .filter(|id| self.is_qq_blacklisted(id))
-            .cloned()
-            .collect()
+impl Default for BlacklistSystem {
+    fn default() -> Self {
+        Self::new()
     }
 }

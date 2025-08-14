@@ -7,7 +7,6 @@ use crate::identification::traits::{
 use async_trait::async_trait;
 use quick_xml::Reader;
 use quick_xml::events::Event;
-use std::fs;
 use std::io::Cursor;
 use std::path::Path;
 
@@ -67,14 +66,13 @@ impl CoolapkIdentifier {
                             }
                         }
 
-                        if is_au_u {
-                            if let Ok(Event::Text(ref t)) = reader.read_event_into(&mut buf) {
-                                let value = t
-                                    .unescape()
-                                    .map_err(|e| format!("XML转义错误: {}", e))?
-                                    .to_string();
-                                return Ok(value);
-                            }
+                        if is_au_u && let Ok(Event::Text(ref t)) = reader.read_event_into(&mut buf)
+                        {
+                            let value = t
+                                .unescape()
+                                .map_err(|e| format!("XML转义错误: {}", e))?
+                                .to_string();
+                            return Ok(value);
                         }
                     }
                 }
@@ -85,6 +83,12 @@ impl CoolapkIdentifier {
         }
 
         Err("未找到酷安UID字段".into())
+    }
+}
+
+impl Default for CoolapkIdentifier {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

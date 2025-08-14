@@ -20,7 +20,15 @@ impl IdentificationManager {
             timeout_duration: Duration::from_secs(5), // 默认5秒超时
         }
     }
+}
 
+impl Default for IdentificationManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl IdentificationManager {
     /// 添加识别器
     pub fn add_identifier<T: Identifier + 'static>(&mut self, identifier: T) {
         self.identifiers.push(Arc::new(identifier));
@@ -83,19 +91,5 @@ impl IdentificationManager {
         }
 
         results
-    }
-
-    /// 获取识别器状态
-    pub fn get_status(&self) -> Vec<(String, bool)> {
-        self.identifiers
-            .iter()
-            .map(|id| (id.name().to_string(), id.is_enabled()))
-            .collect()
-    }
-
-    /// 启用/禁用识别器 (预留接口)
-    pub fn set_enabled(&mut self, _name: &str, _enabled: bool) -> bool {
-        // 预留接口，实际实现需要修改trait设计
-        false
     }
 }

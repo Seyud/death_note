@@ -35,11 +35,11 @@ impl TelegramIdentifier {
         let mut tasks = Vec::new();
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
-            if let Some(folder_name) = path.file_name().and_then(|n| n.to_str()) {
-                if folder_name.contains("gram") {
-                    let task = self.process_telegram_folder_async(path);
-                    tasks.push(task);
-                }
+            if let Some(folder_name) = path.file_name().and_then(|n| n.to_str())
+                && folder_name.contains("gram")
+            {
+                let task = self.process_telegram_folder_async(path);
+                tasks.push(task);
             }
         }
 
@@ -74,25 +74,21 @@ impl TelegramIdentifier {
         // 查找ringtones_pref_[UID].xml格式的文件
         while let Some(entry) = entries.next_entry().await? {
             let file_path = entry.path();
-            if let Some(file_name) = file_path.file_name().and_then(|n| n.to_str()) {
-                if let Some(uid) = self.extract_uid_from_filename(file_name) {
-                    let package_name = folder_path
-                        .file_name()
-                        .and_then(|n| n.to_str())
-                        .unwrap_or("unknown")
-                        .to_string();
+            if let Some(file_name) = file_path.file_name().and_then(|n| n.to_str())
+                && let Some(uid) = self.extract_uid_from_filename(file_name)
+            {
+                let package_name = folder_path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown")
+                    .to_string();
 
-                    let result =
-                        GenericIdentificationResult::new(uid.clone(), "Telegram".to_string())
-                            .with_package_name(package_name.clone())
-                            .with_config_path(file_path.to_string_lossy().to_string())
-                            .with_additional_info(
-                                "应用类型".to_string(),
-                                "Telegram客户端".to_string(),
-                            );
+                let result = GenericIdentificationResult::new(uid.clone(), "Telegram".to_string())
+                    .with_package_name(package_name.clone())
+                    .with_config_path(file_path.to_string_lossy().to_string())
+                    .with_additional_info("应用类型".to_string(), "Telegram客户端".to_string());
 
-                    return Ok(Some(Box::new(result)));
-                }
+                return Ok(Some(Box::new(result)));
             }
         }
 
@@ -105,6 +101,12 @@ impl TelegramIdentifier {
         re.captures(filename)
             .and_then(|captures| captures.get(1))
             .map(|m| m.as_str().to_string())
+    }
+}
+
+impl Default for TelegramIdentifier {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

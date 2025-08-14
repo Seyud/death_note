@@ -1,7 +1,7 @@
-use android_rust_project::identification::coolapk_identifier::CoolapkIdentifier;
-use android_rust_project::identification::manager::IdentificationManager;
-use android_rust_project::identification::qq_identifier::QQAsyncIdentifier;
-use android_rust_project::identification::telegram_identifier::TelegramIdentifier;
+use death_note::identification::coolapk_identifier::CoolapkIdentifier;
+use death_note::identification::manager::IdentificationManager;
+use death_note::identification::qq_identifier::QQAsyncIdentifier;
+use death_note::identification::telegram_identifier::TelegramIdentifier;
 use std::time::Instant;
 use tokio::time::Duration;
 

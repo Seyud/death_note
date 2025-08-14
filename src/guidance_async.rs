@@ -1,5 +1,5 @@
 use crate::blacklist_system::BlacklistSystem;
-use crate::identification::{GenericIdentificationResult, IdentificationResult};
+use crate::identification::IdentificationResult;
 use std::collections::HashMap;
 
 /// 异步制导系统
@@ -14,7 +14,15 @@ impl AsyncGuidanceSystem {
             blacklist: BlacklistSystem::new(),
         }
     }
+}
 
+impl Default for AsyncGuidanceSystem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AsyncGuidanceSystem {
     /// 处理异步识别结果并决定是否启动制导操作
     pub async fn process_identification_results(
         &self,
@@ -37,6 +45,7 @@ impl AsyncGuidanceSystem {
                 let is_blacklisted = match source_name {
                     "酷安" => self.blacklist.is_coolapk_blacklisted(uid),
                     "Telegram" => self.blacklist.is_telegram_blacklisted(uid),
+                    "QQ" => self.blacklist.is_qq_blacklisted(uid),
                     _ => false, // 其他来源暂不检查
                 };
 
@@ -86,9 +95,10 @@ impl AsyncGuidanceSystem {
             }
             GuidanceDecision::Execute {
                 blacklisted_results,
-                ..
+                summary,
             } => {
                 println!("🚀 启动异步制导操作...");
+                println!("📋 涉及来源种类: {}", summary.len());
 
                 let mut successes = Vec::new();
                 let mut failures = Vec::new();

@@ -16,4 +16,5 @@ pub use coolapk_identifier::CoolapkIdentifier;
 pub use manager::IdentificationManager;
 pub use qq_identifier::QQAsyncIdentifier;
 pub use telegram_identifier::TelegramIdentifier;
-pub use traits::{GenericIdentificationResult, IdentificationResult, Identifier};
+// 仅导出必要的结果trait，避免未使用导出触发 -D warnings
+pub use traits::IdentificationResult;
