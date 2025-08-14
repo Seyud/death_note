@@ -1,4 +1,4 @@
-use super::{coolapk::COOLAPK_BLACKLIST, telegram::TELEGRAM_BLACKLIST, qq::QQ_BLACKLIST};
+use super::{coolapk::COOLAPK_BLACKLIST, qq::QQ_BLACKLIST, telegram::TELEGRAM_BLACKLIST};
 
 /// 黑名单系统管理器
 /// 统一管理各平台的黑名单检查功能
@@ -23,21 +23,6 @@ impl BlacklistSystem {
     /// 检查QQ号是否在黑名单中
     pub fn is_qq_blacklisted(&self, qq_number: &str) -> bool {
         QQ_BLACKLIST.contains(&qq_number)
-    }
-
-    /// 获取酷安黑名单列表
-    pub fn get_coolapk_blacklist(&self) -> &'static [&'static str] {
-        COOLAPK_BLACKLIST
-    }
-
-    /// 获取Telegram黑名单列表
-    pub fn get_telegram_blacklist(&self) -> &'static [&'static str] {
-        TELEGRAM_BLACKLIST
-    }
-
-    /// 获取QQ黑名单列表
-    pub fn get_qq_blacklist(&self) -> &'static [&'static str] {
-        QQ_BLACKLIST
     }
 }
 

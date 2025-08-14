@@ -27,7 +27,7 @@ impl CoolapkIdentifier {
 
         // 检查文件是否存在
         if !Path::new(file_path).exists() {
-            return Err(format!("酷安配置文件 {} 不存在", file_path).into());
+            return Ok(Vec::new());
         }
 
         // 异步读取文件内容
