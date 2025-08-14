@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+import sys
+
+def check_ndk_path():
+    ndk_path = "D:/android-ndk"
+    if not os.path.isdir(ndk_path):
+        print("未找到NDK路径，请确保NDK安装在D:/android-ndk")
+        sys.exit(1)
+    print("NDK路径检查通过")
+
+def add_android_target():
+    print("添加Android 64位目标...")
+    try:
+        # 确保在项目根目录执行rustup命令
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        subprocess.run(["rustup", "target", "add", "aarch64-linux-android"], check=True, cwd=project_root)
+    except subprocess.CalledProcessError as e:
+        print(f"添加Android目标失败: {e}")
+        sys.exit(1)
+
+def run_fmt_and_clippy():
+    print("运行 cargo fmt 和 clippy...")
+    try:
+        # 确保在项目根目录执行cargo命令
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        subprocess.run(["cargo", "fmt", "--", "--check"], check=True, cwd=project_root)
+        subprocess.run(["cargo", "clippy", "--", "-D", "warnings"], check=True, cwd=project_root)
+    except subprocess.CalledProcessError as e:
+        print(f"代码格式或检查失败: {e}")
+        sys.exit(1)
+
+def build_android():
+    print("构建Android 64位版本...")
+    try:
+        # 确保在项目根目录执行cargo命令
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        subprocess.run(["cargo", "build", "--target", "aarch64-linux-android", "--release"], check=True, cwd=project_root)
+    except subprocess.CalledProcessError as e:
+        print(f"构建Android版本失败: {e}")
+        sys.exit(1)
+
+def main():
+    print("Android Rust项目构建脚本 (仅64位)")
+    check_ndk_path()
+    add_android_target()
+    run_fmt_and_clippy()
+    build_android()
+    print("构建完成！")
+
+if __name__ == "__main__":
+    main()
