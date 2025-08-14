@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import shutil
 
 def check_ndk_path():
     ndk_path = "D:/android-ndk"
@@ -26,7 +27,7 @@ def run_fmt_and_clippy():
     try:
         # 确保在项目根目录执行cargo命令
         project_root = os.path.dirname(os.path.abspath(__file__))
-        subprocess.run(["cargo", "fmt", "--", "--check"], check=True, cwd=project_root)
+        subprocess.run(["cargo", "fmt"], check=True, cwd=project_root)
         subprocess.run(["cargo", "clippy", "--", "-D", "warnings"], check=True, cwd=project_root)
     except subprocess.CalledProcessError as e:
         print(f"代码格式或检查失败: {e}")
@@ -42,12 +43,30 @@ def build_android():
         print(f"构建Android版本失败: {e}")
         sys.exit(1)
 
+def copy_binary_to_output():
+    print("将构建的二进制文件复制到output文件夹...")
+    try:
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        source_path = os.path.join(project_root, "target", "aarch64-linux-android", "release", "death_note")
+        output_dir = os.path.join(project_root, "output")
+        
+        # 创建output目录（如果不存在）
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 复制二进制文件
+        shutil.copy2(source_path, output_dir)
+        print("二进制文件已成功复制到output文件夹！")
+    except Exception as e:
+        print(f"复制二进制文件失败: {e}")
+        sys.exit(1)
+
 def main():
     print("Android Rust项目构建脚本 (仅64位)")
     check_ndk_path()
     add_android_target()
     run_fmt_and_clippy()
     build_android()
+    copy_binary_to_output()
     print("构建完成！")
 
 if __name__ == "__main__":
