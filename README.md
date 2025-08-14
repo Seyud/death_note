@@ -9,75 +9,15 @@
 ### 核心模块
 
 1. **异步识别系统 (identification)** - 并行身份识别模块
-   - **酷安识别器 (coolapk_async)** - 异步酷安数据提取
-   - **Telegram识别器 (telegram_async)** - 异步Telegram用户识别
-   - **QQ识别器 (qq_identifier)** - QQ用户识别，从acc_info[QQ号].xml提取QQ号
+   - **酷安识别器 (CoolapkIdentifier)** - 异步酷安数据提取
+   - **Telegram识别器 (TelegramIdentifier)** - 异步Telegram用户识别
+   - **QQ识别器 (QQAsyncIdentifier)** - QQ用户识别，从acc_info[QQ号].xml提取QQ号
    - **识别管理器 (IdentificationManager)** - 统一协调所有识别器
-2. **异步制导系统 (guidance_async)** - 基于异步识别结果的决策系统
+2. **异步制导系统 (AsyncGuidanceSystem)** - 基于异步识别结果的决策系统
    - **并行黑名单检查** - 同时处理所有识别结果
    - **智能决策引擎** - 基于检查结果决定是否执行操作
-3. **黑名单系统 (blacklist_system)** - 黑名单ID管理和检查
+3. **黑名单系统 (BlacklistSystem)** - 黑名单ID管理和检查
 
-## 构建系统
-
-### 自动构建
-
-使用提供的 Python 脚本进行一键构建：
-
-```bash
-python build_android.py
-```
-
-构建脚本会执行以下操作：
-1. 检查 NDK 路径
-2. 确保 Android 目标已安装
-3. 运行代码格式检查 (`cargo fmt`)
-4. 运行静态分析 (`cargo clippy`)
-5. 构建 64 位 Android 版本
-
-### 异步系统依赖
-
-新的异步并行系统需要以下额外依赖：
-- `tokio` - 异步运行时
-- `async-trait` - 异步trait支持
-- `futures` - 异步工具集合
-- `regex` - 正则表达式支持
-
-这些依赖已自动包含在Cargo.toml中，无需手动安装。
-
-## 扩展识别器
-
-### 添加新的软件识别器
-
-要添加新的软件识别器，只需实现`Identifier`trait：
-
-```rust
-use crate::identification::traits::{GenericIdentificationResult, IdentificationResult, Identifier};
-use async_trait::async_trait;
-
-pub struct NewAppIdentifier;
-
-#[async_trait]
-impl Identifier for NewAppIdentifier {
-    fn name(&self) -> &'static str {
-        "新应用识别器"
-    }
-
-    async fn identify(&self) -> Vec<Box<dyn IdentificationResult>> {
-        // 实现识别逻辑
-        let results = vec![
-            Box::new(GenericIdentificationResult::new(
-                "用户UID".to_string(),
-                "新应用".to_string(),
-            ))
-        ];
-        results
-    }
-}
-
-// 在主程序中注册
-manager.add_identifier(NewAppIdentifier::new());
-```
 
 ## 性能对比
 
@@ -142,7 +82,7 @@ manager.add_identifier(NewAppIdentifier::new());
 
 ## 核心功能详解
 
-### 1. 制导系统 (guidance.rs)
+### 1. 制导系统 (guidance_async.rs)
 
 #### 功能描述
 - 基于识别结果进行决策
@@ -154,7 +94,7 @@ manager.add_identifier(NewAppIdentifier::new());
 
 识别系统采用模块化设计，包含多个独立的识别模块：
 
-#### 2.1 酷安识别 (identification/coolapk.rs)
+#### 2.1 酷安识别 (identification/coolapk_identifier.rs)
 
 #### 功能描述
 - 读取酷安应用数据
@@ -174,7 +114,7 @@ manager.add_identifier(NewAppIdentifier::new());
 </map>
 ```
 
-#### 2.2 Telegram识别 (identification/telegram.rs)
+#### 2.2 Telegram识别 (identification/telegram_identifier.rs)
 
 #### 功能描述
 - 扫描 `/data/data/` 目录查找包含"gram"的文件夹
