@@ -1,25 +1,25 @@
-//! 示例识别器模板
-//! 展示如何添加新的软件识别器
+//! 死神之眼 - QQ版本
+//! 琉克的死神之眼能够看透QQ用户的真名和寿命
 
-use crate::identification::traits::{
-    GenericIdentificationResult, IdentificationResult, Identifier,
-};
+use crate::identification::traits::{GenericShinigamiEyeResult, ShinigamiEye, ShinigamiEyeResult};
 use async_trait::async_trait;
 use regex::Regex;
 use std::path::Path;
 use tokio::fs;
 
-/// QQ识别器示例
-pub struct QQAsyncIdentifier;
+/// QQ死神之眼
+/// 能够看透QQ用户真名和剩余寿命的死神之眼
+pub struct QQShinigamiEye;
 
-impl QQAsyncIdentifier {
+impl QQShinigamiEye {
     pub fn new() -> Self {
         Self
     }
 
-    async fn identify_qq_async(
+    /// 使用死神之眼获取QQ用户的真名和寿命
+    async fn perceive_qq_users_async(
         &self,
-    ) -> Result<Vec<Box<dyn IdentificationResult>>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Vec<Box<dyn ShinigamiEyeResult>>, Box<dyn std::error::Error + Send + Sync>> {
         let mut results = Vec::new();
 
         // 预编译复用的正则，避免在循环中多次编译（clippy::regex_creation_in_loops）
@@ -42,11 +42,13 @@ impl QQAsyncIdentifier {
                     && let Some(qq_number) = captures.get(1)
                 {
                     let qq_uid = qq_number.as_str().to_string();
+                    let lifespan = self.calculate_lifespan(&qq_uid);
 
-                    let result = Box::new(GenericIdentificationResult::new(
+                    let result = Box::new(GenericShinigamiEyeResult::new(
                         qq_uid.clone(),
                         "QQ".to_string(),
-                    )) as Box<dyn IdentificationResult>;
+                        lifespan,
+                    )) as Box<dyn ShinigamiEyeResult>;
 
                     results.push(result);
                 }
@@ -78,12 +80,14 @@ impl QQAsyncIdentifier {
                                     && let Some(qq_number) = captures.get(1)
                                 {
                                     let qq_uid = qq_number.as_str().to_string();
+                                    let lifespan = self.calculate_lifespan(&qq_uid);
 
-                                    let result = Box::new(GenericIdentificationResult::new(
+                                    let result = Box::new(GenericShinigamiEyeResult::new(
                                         qq_uid.clone(),
                                         "QQ".to_string(),
+                                        lifespan,
                                     ))
-                                        as Box<dyn IdentificationResult>;
+                                        as Box<dyn ShinigamiEyeResult>;
 
                                     results.push(result);
                                 }
@@ -96,25 +100,33 @@ impl QQAsyncIdentifier {
 
         Ok(results)
     }
+
+    /// 根据QQ号计算剩余寿命
+    fn calculate_lifespan(&self, qq_uid: &str) -> String {
+        // 使用QQ号的哈希值计算剩余寿命，模拟死神之眼的寿命感知
+        let hash = qq_uid.chars().map(|c| c as u32).sum::<u32>();
+        let years = (hash % 60) + 5; // 5-65年的剩余寿命
+        format!("{}年", years)
+    }
 }
 
-impl Default for QQAsyncIdentifier {
+impl Default for QQShinigamiEye {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[async_trait]
-impl Identifier for QQAsyncIdentifier {
+impl ShinigamiEye for QQShinigamiEye {
     fn name(&self) -> &'static str {
-        "QQ识别器"
+        "QQ死神之眼"
     }
 
-    async fn identify(&self) -> Vec<Box<dyn IdentificationResult>> {
-        match self.identify_qq_async().await {
+    async fn identify(&self) -> Vec<Box<dyn ShinigamiEyeResult>> {
+        match self.perceive_qq_users_async().await {
             Ok(results) => results,
             Err(e) => {
-                eprintln!("QQ识别错误: {}", e);
+                eprintln!("QQ死神之眼感知错误: {}", e);
                 Vec::new()
             }
         }

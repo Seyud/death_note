@@ -1,85 +1,105 @@
-mod blacklist;
-mod guidance_async;
-mod identification;
-
+// use death_note::blacklist::manager::DeathNote;
+use death_note::guidance_async::RyukGuidanceSystem;
+use death_note::identification::{
+    coolapk_identifier::CoolapkShinigamiEye, manager::ShinigamiEyeManager,
+    qq_identifier::QQShinigamiEye, telegram_identifier::TelegramShinigamiEye,
+};
 use std::collections::HashMap;
+use std::time::Duration;
 
-/// 显示所有识别到的UID
-fn display_all_identified_uids(
-    results: &HashMap<String, Vec<Box<dyn identification::IdentificationResult>>>,
+/// 显示所有被死神之眼发现的目标
+fn display_shinigami_discoveries(
+    results: &HashMap<String, Vec<Box<dyn death_note::identification::ShinigamiEyeResult>>>,
 ) {
     println!();
-    println!("📋 识别结果汇总:");
+    println!("👁️‍🗨️ 死神之眼观察结果:");
 
     if results.is_empty() {
-        println!("   ❌ 未识别到任何UID");
+        println!("   😴 死神之眼未发现任何目标，琉克感到无聊...");
         return;
     }
 
-    let mut total_count = 0;
+    let mut total_targets = 0;
 
     for (source, source_results) in results {
         if !source_results.is_empty() {
-            println!("   📱 {} ({} 个UID):", source, source_results.len());
-            total_count += source_results.len();
+            println!("   📱 {} ({} 个目标):", source, source_results.len());
+            total_targets += source_results.len();
 
             for (index, result) in source_results.iter().enumerate() {
-                // 只显示 UID
-                println!("      {}. {}", index + 1, result.uid());
+                println!(
+                    "      {}. {} (寿命: {})",
+                    index + 1,
+                    result.name(),
+                    result.lifespan()
+                );
             }
             println!();
         }
     }
 
-    println!("✅ 总计识别到 {} 个UID", total_count);
+    println!("⚰️ 死神之眼总计发现 {} 个目标", total_targets);
 }
 
 #[tokio::main]
-async fn main() {
-    println!("death_note - 异步并行识别系统");
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("📓 死亡笔记打开了...");
+    println!("😈 Ryuk: 终于有点有趣的事情了...");
     println!();
 
-    // 创建识别管理器
-    let mut manager = identification::IdentificationManager::new();
-    manager.set_timeout(std::time::Duration::from_secs(3));
+    // 创建死神之眼管理器
+    let mut eye_manager = ShinigamiEyeManager::new();
+    eye_manager.set_vision_duration(Duration::from_secs(5));
 
-    // 注册所有识别器
-    manager.add_identifier(identification::CoolapkIdentifier::new());
-    manager.add_identifier(identification::TelegramIdentifier::new());
-    manager.add_identifier(identification::QQAsyncIdentifier::new());
+    // 添加各个平台的死神之眼
+    eye_manager.add_shinigami_eye(CoolapkShinigamiEye::new());
+    eye_manager.add_shinigami_eye(QQShinigamiEye::new());
+    eye_manager.add_shinigami_eye(TelegramShinigamiEye::new());
 
-    // 并行执行所有识别器
-    let results = manager.run_all().await;
+    // 创建琉克制导系统
+    let ryuk = RyukGuidanceSystem::new();
 
-    // 显示所有识别到的UID
-    display_all_identified_uids(&results);
+    // 激活所有死神之眼进行识别
+    println!("👁️‍🗨️ 激活死神之眼观察人类世界...");
+    let results = eye_manager.activate_all().await;
 
-    // 使用异步制导系统处理结果
-    let guidance_system = guidance_async::AsyncGuidanceSystem::new();
-    let decision = guidance_system
-        .process_identification_results(results)
-        .await;
-    let guidance_result = guidance_system.execute_guidance(&decision).await;
+    // 显示死神之眼的发现
+    display_shinigami_discoveries(&results);
 
-    // 显示最终结果
+    // 琉克进行审判
+    println!("⚰️ 琉克开始翻阅死亡笔记进行审判...");
+    let decision = ryuk.ryuk_judgment(results).await;
+
+    // 执行审判
+    let final_result = ryuk.execute_shinigami_judgment(&decision).await;
+
+    // 显示最终审判结果
     println!();
-    println!("📊 系统执行完成:");
-    match guidance_result {
-        guidance_async::GuidanceResult::Skipped => {
-            println!("✅ 系统安全：未检测到威胁，跳过操作");
+    println!("⚰️ 死神审判完成:");
+    match final_result {
+        death_note::guidance_async::ShinigamiResult::Skipped => {
+            println!("😴 Ryuk: 今天没有有趣的灵魂...");
+            println!("😈 Ryuk: 人类的世界真是越来越无聊了");
         }
-        guidance_async::GuidanceResult::Executed {
-            successes,
-            failures,
-            blacklisted_count,
+        death_note::guidance_async::ShinigamiResult::Executed {
+            souls_collected,
+            escaped_souls,
+            targets_judged,
         } => {
-            println!("🎯 执行完成：处理了 {} 个黑名单ID", blacklisted_count);
-            if !successes.is_empty() {
-                println!("✅ 成功操作：{:?}", successes);
+            println!("⚰️ 审判完成！");
+            println!("📝 被审判的目标数量: {}", targets_judged);
+            println!("💀 成功收割的灵魂: {:?}", souls_collected);
+            if !escaped_souls.is_empty() {
+                println!("💨 逃脱的灵魂: {:?}", escaped_souls);
             }
-            if !failures.is_empty() {
-                println!("❌ 失败操作：{:?}", failures);
-            }
+            println!("🍎 Ryuk: 今天的苹果真甜...");
+            println!("😈 Ryuk: 死神界的苹果还是比不上人类的灵魂有趣");
         }
     }
+
+    println!();
+    println!("📓 死亡笔记系统运行结束");
+    println!("👁️‍🗨️ 死神之眼已关闭");
+
+    Ok(())
 }

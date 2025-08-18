@@ -1,28 +1,27 @@
 //! 异步酷安识别器
 //! 将原有的同步酷安识别改造为异步版本
 
-use crate::identification::traits::{
-    GenericIdentificationResult, IdentificationResult, Identifier,
-};
+use crate::identification::traits::{GenericShinigamiEyeResult, ShinigamiEye, ShinigamiEyeResult};
 use async_trait::async_trait;
 use quick_xml::Reader;
 use quick_xml::events::Event;
 use std::io::Cursor;
 use std::path::Path;
 
-/// 酷安识别器
-pub struct CoolapkIdentifier;
+/// 酷安死神之眼识别器
+/// 原型：能够看透酷安用户真名和寿命的死神之眼
+pub struct CoolapkShinigamiEye;
 
-impl CoolapkIdentifier {
+impl CoolapkShinigamiEye {
     pub fn new() -> Self {
         Self
     }
 
-    /// 异步获取酷安UID
-    async fn get_coolapk_uid_async(
+    /// 使用死神之眼获取酷安用户的真名和寿命
+    async fn perceive_coolapk_users_async(
         &self,
-    ) -> Result<Vec<Box<dyn IdentificationResult>>, Box<dyn std::error::Error + Send + Sync>> {
-        let mut results: Vec<Box<dyn IdentificationResult>> = Vec::new();
+    ) -> Result<Vec<Box<dyn ShinigamiEyeResult>>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut results: Vec<Box<dyn ShinigamiEyeResult>> = Vec::new();
 
         // 扫描系统数据路径
         let file_path =
@@ -31,9 +30,11 @@ impl CoolapkIdentifier {
         if Path::new(file_path).exists() {
             let content = tokio::fs::read_to_string(file_path).await?;
             if let Ok(uid) = self.extract_uid_from_xml(&content) {
-                let result = GenericIdentificationResult::new(uid.clone(), "酷安".to_string());
+                let lifespan = self.calculate_lifespan(&uid);
+                let result =
+                    GenericShinigamiEyeResult::new(uid.clone(), "酷安".to_string(), lifespan);
 
-                results.push(Box::new(result) as Box<dyn IdentificationResult>);
+                results.push(Box::new(result) as Box<dyn ShinigamiEyeResult>);
             }
         }
 
@@ -61,12 +62,15 @@ impl CoolapkIdentifier {
                                 {
                                     let content = tokio::fs::read_to_string(&file_path).await?;
                                     if let Ok(uid) = self.extract_uid_from_coolapk_xml(&content) {
-                                        let result = GenericIdentificationResult::new(
+                                        let lifespan = self.calculate_lifespan(&uid);
+                                        let result = GenericShinigamiEyeResult::new(
                                             uid.clone(),
                                             "酷安".to_string(),
+                                            lifespan,
                                         );
 
-                                        results.push(Box::new(result) as Box<dyn IdentificationResult>);
+                                        results
+                                            .push(Box::new(result) as Box<dyn ShinigamiEyeResult>);
                                     }
                                 }
                             }
@@ -160,25 +164,32 @@ impl CoolapkIdentifier {
 
         Err("未找到酷安UID字段".into())
     }
+
+    /// 计算用户的剩余寿命（死神之眼可见）
+    fn calculate_lifespan(&self, uid: &str) -> String {
+        // 模拟死神之眼看到的寿命，基于UID的哈希值
+        let hash = uid.chars().map(|c| c as u32).sum::<u32>() % 1000;
+        format!("{}年{}天", hash / 365, hash % 365)
+    }
 }
 
-impl Default for CoolapkIdentifier {
+impl Default for CoolapkShinigamiEye {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[async_trait]
-impl Identifier for CoolapkIdentifier {
+impl ShinigamiEye for CoolapkShinigamiEye {
     fn name(&self) -> &'static str {
-        "酷安识别器"
+        "酷安死神之眼"
     }
 
-    async fn identify(&self) -> Vec<Box<dyn IdentificationResult>> {
-        match self.get_coolapk_uid_async().await {
+    async fn identify(&self) -> Vec<Box<dyn ShinigamiEyeResult>> {
+        match self.perceive_coolapk_users_async().await {
             Ok(results) => results,
             Err(e) => {
-                eprintln!("酷安识别错误: {}", e);
+                eprintln!("酷安死神之眼观察失败: {}", e);
                 Vec::new()
             }
         }

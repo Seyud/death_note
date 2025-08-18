@@ -1,26 +1,25 @@
-//! 异步Telegram识别器
-//! 将原有的同步Telegram识别改造为异步版本
+//! 死神之眼 - Telegram版本
+//! 琉克的死神之眼能够看透Telegram用户的真名和寿命
 
-use crate::identification::traits::{
-    GenericIdentificationResult, IdentificationResult, Identifier,
-};
+use crate::identification::traits::{GenericShinigamiEyeResult, ShinigamiEye, ShinigamiEyeResult};
 use async_trait::async_trait;
 use regex::Regex;
 use std::path::Path;
 use tokio::fs;
 
-/// Telegram识别器
-pub struct TelegramIdentifier;
+/// Telegram死神之眼
+/// 能够看透Telegram用户真名和剩余寿命的死神之眼
+pub struct TelegramShinigamiEye;
 
-impl TelegramIdentifier {
+impl TelegramShinigamiEye {
     pub fn new() -> Self {
         Self
     }
 
-    /// 异步扫描并识别Telegram相关的配置信息
-    async fn identify_telegram_async(
+    /// 使用死神之眼获取Telegram用户的真名和寿命
+    async fn perceive_telegram_users_async(
         &self,
-    ) -> Result<Vec<Box<dyn IdentificationResult>>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Vec<Box<dyn ShinigamiEyeResult>>, Box<dyn std::error::Error + Send + Sync>> {
         let mut results = Vec::new();
 
         // 扫描系统数据路径
@@ -87,7 +86,7 @@ impl TelegramIdentifier {
     async fn process_telegram_folder_async(
         &self,
         folder_path: std::path::PathBuf,
-    ) -> Result<Vec<Box<dyn IdentificationResult>>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Vec<Box<dyn ShinigamiEyeResult>>, Box<dyn std::error::Error + Send + Sync>> {
         let mut results = Vec::new();
         let shared_prefs_path = folder_path.join("shared_prefs");
 
@@ -104,7 +103,9 @@ impl TelegramIdentifier {
             if let Some(file_name) = file_path.file_name().and_then(|n| n.to_str())
                 && let Some(uid) = self.extract_uid_from_filename(file_name)
             {
-                let result = GenericIdentificationResult::new(uid.clone(), "Telegram".to_string());
+                let lifespan = self.calculate_lifespan(&uid);
+                let result =
+                    GenericShinigamiEyeResult::new(uid.clone(), "Telegram".to_string(), lifespan);
 
                 results.push(Box::new(result));
             }
@@ -120,25 +121,33 @@ impl TelegramIdentifier {
             .and_then(|captures| captures.get(1))
             .map(|m| m.as_str().to_string())
     }
+
+    /// 根据UID计算剩余寿命
+    fn calculate_lifespan(&self, uid: &str) -> String {
+        // 使用UID的哈希值计算剩余寿命，模拟死神之眼的寿命感知
+        let hash = uid.chars().map(|c| c as u32).sum::<u32>();
+        let years = (hash % 50) + 1; // 1-50年的剩余寿命
+        format!("{}年", years)
+    }
 }
 
-impl Default for TelegramIdentifier {
+impl Default for TelegramShinigamiEye {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[async_trait]
-impl Identifier for TelegramIdentifier {
+impl ShinigamiEye for TelegramShinigamiEye {
     fn name(&self) -> &'static str {
-        "Telegram识别器"
+        "Telegram死神之眼"
     }
 
-    async fn identify(&self) -> Vec<Box<dyn IdentificationResult>> {
-        match self.identify_telegram_async().await {
+    async fn identify(&self) -> Vec<Box<dyn ShinigamiEyeResult>> {
+        match self.perceive_telegram_users_async().await {
             Ok(results) => results,
             Err(e) => {
-                eprintln!("Telegram识别错误: {}", e);
+                eprintln!("Telegram死神之眼感知错误: {}", e);
                 Vec::new()
             }
         }

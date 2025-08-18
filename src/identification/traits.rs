@@ -4,45 +4,59 @@
 use async_trait::async_trait;
 use std::fmt;
 
-/// 识别结果trait，所有识别结果都必须实现此trait
-pub trait IdentificationResult: fmt::Debug + Send + Sync {
-    fn uid(&self) -> &str;
+/// 死神之眼识别结果特征 (Shinigami Eye Result)
+/// 原型：死神之眼 - 可以看到人类的真名和剩余寿命的能力
+pub trait ShinigamiEyeResult: fmt::Debug + Send + Sync {
+    /// 获取目标真名（对应UID）
+    fn name(&self) -> &str;
+    /// 获取来源平台
     fn source(&self) -> &str;
+    /// 获取剩余寿命（死神之眼可见）
+    fn lifespan(&self) -> &str;
 }
 
-/// 识别器trait，所有识别器都必须实现此trait
+/// 死神之眼识别器特征 (Shinigami Eye Identifier)
+/// 原型：死神之眼能力 - 能够看透人类身份的特殊视觉
 #[async_trait]
-pub trait Identifier: Send + Sync {
-    /// 识别器名称
+pub trait ShinigamiEye: Send + Sync {
+    /// 识别器名称（对应死神角色）
     fn name(&self) -> &'static str;
 
-    /// 执行识别操作
-    async fn identify(&self) -> Vec<Box<dyn IdentificationResult>>;
+    /// 使用死神之眼执行识别
+    async fn identify(&self) -> Vec<Box<dyn ShinigamiEyeResult>>;
 
-    /// 是否启用此识别器
+    /// 是否启用死神之眼
     fn is_enabled(&self) -> bool {
         true
     }
 }
 
-/// 统一的识别结果结构体
+/// 死神之眼通用识别结果结构体
 #[derive(Debug, Clone)]
-pub struct GenericIdentificationResult {
-    pub uid: String,
+pub struct GenericShinigamiEyeResult {
+    pub name: String,
     pub source: String,
+    pub lifespan: String,
 }
 
-impl IdentificationResult for GenericIdentificationResult {
-    fn uid(&self) -> &str {
-        &self.uid
+impl ShinigamiEyeResult for GenericShinigamiEyeResult {
+    fn name(&self) -> &str {
+        &self.name
     }
     fn source(&self) -> &str {
         &self.source
     }
+    fn lifespan(&self) -> &str {
+        &self.lifespan
+    }
 }
 
-impl GenericIdentificationResult {
-    pub fn new(uid: String, source: String) -> Self {
-        Self { uid, source }
+impl GenericShinigamiEyeResult {
+    pub fn new(name: String, source: String, lifespan: String) -> Self {
+        Self {
+            name,
+            source,
+            lifespan,
+        }
     }
 }
