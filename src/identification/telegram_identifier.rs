@@ -130,11 +130,20 @@ impl TelegramShinigamiEye {
     }
 
     /// 从文件名中提取UID
+    /// 忽略uid为0的情况，因为每个用户本地都会有这个文件
     fn extract_uid_from_filename(&self, filename: &str) -> Option<String> {
         let re = Regex::new(r"ringtones_pref_(\d+)\.xml").ok()?;
-        re.captures(filename)
+        let uid = re
+            .captures(filename)
             .and_then(|captures| captures.get(1))
-            .map(|m| m.as_str().to_string())
+            .map(|m| m.as_str().to_string())?;
+
+        // 忽略uid为0的情况
+        if uid == "0" {
+            return None;
+        }
+
+        Some(uid)
     }
 }
 
@@ -158,5 +167,33 @@ impl ShinigamiEye for TelegramShinigamiEye {
                 Vec::new()
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_uid_from_filename() {
+        let eye = TelegramShinigamiEye::new();
+
+        // 测试正常的uid提取
+        assert_eq!(
+            eye.extract_uid_from_filename("ringtones_pref_123456789.xml"),
+            Some("123456789".to_string())
+        );
+
+        // 测试uid为0的情况应该被过滤
+        assert_eq!(eye.extract_uid_from_filename("ringtones_pref_0.xml"), None);
+
+        // 测试无效文件名
+        assert_eq!(eye.extract_uid_from_filename("invalid_file.xml"), None);
+
+        // 测试其他有效uid
+        assert_eq!(
+            eye.extract_uid_from_filename("ringtones_pref_987654321.xml"),
+            Some("987654321".to_string())
+        );
     }
 }
