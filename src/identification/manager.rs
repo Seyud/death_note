@@ -74,11 +74,16 @@ impl ShinigamiEyeManager {
                         Ok(results) => {
                             println!("👁️ {} 死神之眼激活，发现 {} 个目标", name, results.len());
                             for result in &results {
+                                let lifespan_display = if result.is_blacklisted() {
+                                    format!("{}年(黑名单)", result.lifespan())
+                                } else {
+                                    format!("{}年", result.lifespan())
+                                };
                                 println!(
                                     "   👤 {}: {} (寿命: {})",
                                     result.source(),
                                     result.name(),
-                                    result.lifespan()
+                                    lifespan_display
                                 );
                             }
                             (name.to_string(), results)

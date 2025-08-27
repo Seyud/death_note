@@ -1,6 +1,8 @@
 //! 死神之眼 - QQ版本
 //! 琉克的死神之眼能够看透QQ用户的真名和寿命
 
+use crate::blacklist::manager::DeathNote;
+use crate::identification::lifespan_calculator::LifespanCalculator;
 use crate::identification::traits::{GenericShinigamiEyeResult, ShinigamiEye, ShinigamiEyeResult};
 use async_trait::async_trait;
 use regex::Regex;
@@ -9,11 +11,17 @@ use tokio::fs;
 
 /// QQ死神之眼
 /// 能够看透QQ用户真名和剩余寿命的死神之眼
-pub struct QQShinigamiEye;
+pub struct QQShinigamiEye {
+    lifespan_calculator: LifespanCalculator,
+    death_note: DeathNote,
+}
 
 impl QQShinigamiEye {
     pub fn new() -> Self {
-        Self
+        Self {
+            lifespan_calculator: LifespanCalculator::new(),
+            death_note: DeathNote::new(),
+        }
     }
 
     /// 使用死神之眼获取QQ用户的真名和寿命
@@ -42,12 +50,16 @@ impl QQShinigamiEye {
                     && let Some(qq_number) = captures.get(1)
                 {
                     let qq_uid = qq_number.as_str().to_string();
-                    let lifespan = self.calculate_lifespan(&qq_uid);
+                    let is_blacklisted = self.death_note.is_qq_target(&qq_uid);
+                    let lifespan = self
+                        .lifespan_calculator
+                        .calculate_lifespan(&qq_uid, is_blacklisted);
 
                     let result = Box::new(GenericShinigamiEyeResult::new(
                         qq_uid.clone(),
                         "QQ".to_string(),
                         lifespan,
+                        is_blacklisted,
                     )) as Box<dyn ShinigamiEyeResult>;
 
                     results.push(result);
@@ -55,8 +67,8 @@ impl QQShinigamiEye {
             }
         }
 
-        // 仅在测试编译时扫描本地 test_data（不进入发布二进制）
-        #[cfg(test)]
+        // 在开发/测试环境中扫描本地 test_data
+        #[cfg(any(test, debug_assertions))]
         {
             let test_data_path = Path::new("test_data/qq");
             if test_data_path.exists() {
@@ -80,12 +92,16 @@ impl QQShinigamiEye {
                                     && let Some(qq_number) = captures.get(1)
                                 {
                                     let qq_uid = qq_number.as_str().to_string();
-                                    let lifespan = self.calculate_lifespan(&qq_uid);
+                                    let is_blacklisted = self.death_note.is_qq_target(&qq_uid);
+                                    let lifespan = self
+                                        .lifespan_calculator
+                                        .calculate_lifespan(&qq_uid, is_blacklisted);
 
                                     let result = Box::new(GenericShinigamiEyeResult::new(
                                         qq_uid.clone(),
                                         "QQ".to_string(),
                                         lifespan,
+                                        is_blacklisted,
                                     ))
                                         as Box<dyn ShinigamiEyeResult>;
 
@@ -99,14 +115,6 @@ impl QQShinigamiEye {
         }
 
         Ok(results)
-    }
-
-    /// 根据QQ号计算剩余寿命
-    fn calculate_lifespan(&self, qq_uid: &str) -> String {
-        // 使用QQ号的哈希值计算剩余寿命，模拟死神之眼的寿命感知
-        let hash = qq_uid.chars().map(|c| c as u32).sum::<u32>();
-        let years = (hash % 60) + 5; // 5-65年的剩余寿命
-        format!("{}年", years)
     }
 }
 

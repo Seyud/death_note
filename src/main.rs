@@ -27,11 +27,16 @@ fn display_shinigami_discoveries(
             total_targets += source_results.len();
 
             for (index, result) in source_results.iter().enumerate() {
+                let lifespan_display = if result.is_blacklisted() {
+                    format!("{}年(黑名单)", result.lifespan())
+                } else {
+                    format!("{}年", result.lifespan())
+                };
                 println!(
                     "      {}. {} (寿命: {})",
                     index + 1,
                     result.name(),
-                    result.lifespan()
+                    lifespan_display
                 );
             }
             println!();
@@ -67,6 +72,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     display_shinigami_discoveries(&results);
 
     // 琉克进行审判
+    println!("📖 翻查死亡笔记");
     println!("⚰️ 琉克开始翻阅死亡笔记进行审判...");
     let decision = ryuk.ryuk_judgment(results).await;
 

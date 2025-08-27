@@ -1,6 +1,8 @@
 //! 死神之眼 - Telegram版本
 //! 琉克的死神之眼能够看透Telegram用户的真名和寿命
 
+use crate::blacklist::manager::DeathNote;
+use crate::identification::lifespan_calculator::LifespanCalculator;
 use crate::identification::traits::{GenericShinigamiEyeResult, ShinigamiEye, ShinigamiEyeResult};
 use async_trait::async_trait;
 use regex::Regex;
@@ -9,11 +11,17 @@ use tokio::fs;
 
 /// Telegram死神之眼
 /// 能够看透Telegram用户真名和剩余寿命的死神之眼
-pub struct TelegramShinigamiEye;
+pub struct TelegramShinigamiEye {
+    lifespan_calculator: LifespanCalculator,
+    death_note: DeathNote,
+}
 
 impl TelegramShinigamiEye {
     pub fn new() -> Self {
-        Self
+        Self {
+            lifespan_calculator: LifespanCalculator::new(),
+            death_note: DeathNote::new(),
+        }
     }
 
     /// 使用死神之眼获取Telegram用户的真名和寿命
@@ -48,8 +56,8 @@ impl TelegramShinigamiEye {
             }
         }
 
-        // 仅在测试编译时扫描本地 test_data（不会进入发布二进制）
-        #[cfg(test)]
+        // 在开发/测试环境中扫描本地 test_data
+        #[cfg(any(test, debug_assertions))]
         {
             let test_data_path = Path::new("test_data");
             if test_data_path.exists() {
@@ -103,9 +111,16 @@ impl TelegramShinigamiEye {
             if let Some(file_name) = file_path.file_name().and_then(|n| n.to_str())
                 && let Some(uid) = self.extract_uid_from_filename(file_name)
             {
-                let lifespan = self.calculate_lifespan(&uid);
-                let result =
-                    GenericShinigamiEyeResult::new(uid.clone(), "Telegram".to_string(), lifespan);
+                let is_blacklisted = self.death_note.is_telegram_target(&uid);
+                let lifespan = self
+                    .lifespan_calculator
+                    .calculate_lifespan(&uid, is_blacklisted);
+                let result = GenericShinigamiEyeResult::new(
+                    uid.clone(),
+                    "Telegram".to_string(),
+                    lifespan,
+                    is_blacklisted,
+                );
 
                 results.push(Box::new(result));
             }
@@ -120,14 +135,6 @@ impl TelegramShinigamiEye {
         re.captures(filename)
             .and_then(|captures| captures.get(1))
             .map(|m| m.as_str().to_string())
-    }
-
-    /// 根据UID计算剩余寿命
-    fn calculate_lifespan(&self, uid: &str) -> String {
-        // 使用UID的哈希值计算剩余寿命，模拟死神之眼的寿命感知
-        let hash = uid.chars().map(|c| c as u32).sum::<u32>();
-        let years = (hash % 50) + 1; // 1-50年的剩余寿命
-        format!("{}年", years)
     }
 }
 

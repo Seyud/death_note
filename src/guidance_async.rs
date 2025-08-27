@@ -34,6 +34,11 @@ impl RyukGuidanceSystem {
     pub fn is_bored(&self) -> bool {
         self.boredom_level.load(Ordering::Relaxed) > 50
     }
+
+    /// 获取琉克吃掉的苹果总数
+    pub fn get_apple_count(&self) -> usize {
+        self.apple_count.load(Ordering::Relaxed)
+    }
 }
 
 impl Default for RyukGuidanceSystem {
@@ -48,58 +53,30 @@ impl RyukGuidanceSystem {
         &self,
         results: HashMap<String, Vec<Box<dyn ShinigamiEyeResult>>>,
     ) -> DeathNoteDecision {
-        println!("👁️‍🗨️ Ryuk: *无聊地翻着死亡笔记*...");
+        println!("👁️‍🗨️ Ryuk: *观察死神之眼的发现*...");
 
-        if self.is_bored() {
-            println!("😈 Ryuk: 人类的世界真是无聊啊...让我看看有什么有趣的事情");
-            self.eat_apple();
-        }
-
-        // 统计所有识别结果
-        let mut total_targets = 0;
-        for (source, source_results) in &results {
-            total_targets += source_results.len();
-            if !source_results.is_empty() {
-                println!(
-                    "   📊 {}: {} 个目标被死神之眼发现",
-                    source,
-                    source_results.len()
-                );
-            }
-        }
-
-        if total_targets > 0 {
-            println!("   🔍 开始检查死亡笔记...");
-        }
-
+        let mut blacklisted_count = 0;
         let mut death_targets = Vec::new();
         let mut summary = HashMap::new();
 
-        // 遍历所有识别结果，寻找死亡笔记上的名字
+        // 统计黑名单用户并收集目标
         for (source, source_results) in &results {
             let mut source_targets = Vec::new();
 
             for result in source_results {
-                let name = result.name();
-                let source_name = result.source();
-                let lifespan = result.lifespan();
-
-                // 根据来源类型检查死亡笔记
-                let is_in_death_note = match source_name {
-                    "酷安" => self.death_note.is_coolapk_target(name),
-                    "Telegram" => self.death_note.is_telegram_target(name),
-                    "QQ" => self.death_note.is_qq_target(name),
-                    _ => false,
-                };
-
-                if is_in_death_note {
+                if result.is_blacklisted() {
+                    blacklisted_count += 1;
                     death_targets.push(DeathNoteTarget {
-                        source: source_name.to_string(),
-                        name: name.to_string(),
-                        lifespan: lifespan.to_string(),
+                        source: result.source().to_string(),
+                        name: result.name().to_string(),
+                        lifespan: result.lifespan().to_string(),
                     });
-                    source_targets.push(name.to_string());
-                    println!("   ⚰️ {}的名字出现在死亡笔记上: {}", source_name, name);
+                    source_targets.push(result.name().to_string());
+                    println!(
+                        "⚰️ 发现黑名单目标: {} (寿命: {})",
+                        result.name(),
+                        result.lifespan()
+                    );
                 }
             }
 
@@ -108,27 +85,29 @@ impl RyukGuidanceSystem {
             }
         }
 
-        if death_targets.is_empty() {
-            println!("😴 Ryuk: 没有值得行动的名字，继续观察...");
-            self.boredom_level.fetch_add(5, Ordering::Relaxed);
-            DeathNoteDecision::Skip
-        } else {
+        // 根据发现的黑名单用户数量消费苹果
+        if blacklisted_count > 0 {
             println!(
-                "😈 Ryuk: 有趣！{} 个名字被记录在死亡笔记上",
-                death_targets.len()
+                "🍎 发现 {} 个黑名单目标，琉克开始享用苹果...",
+                blacklisted_count
             );
-            for target in &death_targets {
+            for i in 0..blacklisted_count {
+                self.eat_apple();
                 println!(
-                    "   📝 {}: {} (剩余寿命: {})",
-                    target.source, target.name, target.lifespan
+                    "🍎 琉克吃掉第 {} 个苹果 (共需 {} 个)",
+                    i + 1,
+                    blacklisted_count
                 );
             }
-            self.eat_apple(); // 发现有趣的事情，吃苹果庆祝
 
             DeathNoteDecision::Execute {
                 death_targets,
                 summary,
             }
+        } else {
+            println!("😴 Ryuk: 没有发现黑名单目标，继续观察...");
+            self.boredom_level.fetch_add(5, Ordering::Relaxed);
+            DeathNoteDecision::Skip
         }
     }
 
@@ -211,6 +190,10 @@ impl RyukGuidanceSystem {
             println!("😈 Ryuk: 这个灵魂看起来很有趣...");
         }
 
+        // 使用死亡笔记记录灵魂收割
+        self.death_note
+            .record_soul_harvest("boot", "Android Boot Partition");
+
         // TODO: 实际实现 - 使用tokio的异步文件操作或系统调用
         // 象征性地将boot分区还原作为"灵魂收割"
 
@@ -227,6 +210,10 @@ impl RyukGuidanceSystem {
         if self.is_bored() {
             println!("😈 Ryuk: 又一个灵魂回归死神界...");
         }
+
+        // 使用死亡笔记记录灵魂收割
+        self.death_note
+            .record_soul_harvest("init_boot", "Android Init Boot Partition");
 
         // TODO: 实际实现 - 使用tokio的异步文件操作或系统调用
         // 象征性地将init_boot分区还原作为"灵魂收割"

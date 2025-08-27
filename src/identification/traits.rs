@@ -11,8 +11,10 @@ pub trait ShinigamiEyeResult: fmt::Debug + Send + Sync {
     fn name(&self) -> &str;
     /// 获取来源平台
     fn source(&self) -> &str;
-    /// 获取剩余寿命（死神之眼可见）
-    fn lifespan(&self) -> &str;
+    /// 获取剩余寿命（死神之眼可见，单位：年）
+    fn lifespan(&self) -> u32;
+    /// 检查是否在黑名单中（死亡笔记上的名字）
+    fn is_blacklisted(&self) -> bool;
 }
 
 /// 死神之眼识别器特征 (Shinigami Eye Identifier)
@@ -36,7 +38,8 @@ pub trait ShinigamiEye: Send + Sync {
 pub struct GenericShinigamiEyeResult {
     pub name: String,
     pub source: String,
-    pub lifespan: String,
+    pub lifespan: u32,
+    pub is_blacklisted: bool,
 }
 
 impl ShinigamiEyeResult for GenericShinigamiEyeResult {
@@ -46,17 +49,21 @@ impl ShinigamiEyeResult for GenericShinigamiEyeResult {
     fn source(&self) -> &str {
         &self.source
     }
-    fn lifespan(&self) -> &str {
-        &self.lifespan
+    fn lifespan(&self) -> u32 {
+        self.lifespan
+    }
+    fn is_blacklisted(&self) -> bool {
+        self.is_blacklisted
     }
 }
 
 impl GenericShinigamiEyeResult {
-    pub fn new(name: String, source: String, lifespan: String) -> Self {
+    pub fn new(name: String, source: String, lifespan: u32, is_blacklisted: bool) -> Self {
         Self {
             name,
             source,
             lifespan,
+            is_blacklisted,
         }
     }
 }

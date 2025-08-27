@@ -8,7 +8,6 @@ pub struct DeathNote;
 impl DeathNote {
     /// 创建新的死亡笔记实例
     pub fn new() -> Self {
-        println!("📖 翻查死亡笔记");
         Self
     }
 
@@ -25,6 +24,15 @@ impl DeathNote {
     /// 检查QQ号是否在死亡笔记上
     pub fn is_qq_target(&self, qq_number: &str) -> bool {
         DEATH_NOTE_QQ.contains(&qq_number)
+    }
+
+    /// 记录灵魂收割 - 琉克使用死亡笔记记录收割的灵魂
+    pub fn record_soul_harvest(&self, partition_name: &str, description: &str) {
+        println!(
+            "📖 死亡笔记记录: {} - {} 的灵魂已被收割",
+            partition_name, description
+        );
+        // 这里可以扩展为实际的记录逻辑，如保存到文件或数据库
     }
 }
 

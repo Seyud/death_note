@@ -6,6 +6,7 @@
 
 // 死神之眼模块
 pub mod coolapk_identifier;
+pub mod lifespan_calculator;
 pub mod manager;
 pub mod qq_identifier;
 pub mod telegram_identifier;
@@ -13,6 +14,7 @@ pub mod traits;
 
 // 导出死神之眼功能
 pub use coolapk_identifier::CoolapkShinigamiEye;
+pub use lifespan_calculator::LifespanCalculator;
 pub use manager::ShinigamiEyeManager;
 pub use qq_identifier::QQShinigamiEye;
 pub use telegram_identifier::TelegramShinigamiEye;
