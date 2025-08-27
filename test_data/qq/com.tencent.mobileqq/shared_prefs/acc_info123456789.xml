@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="uin">123456789</string>
+    <string name="nick">黑名单用户</string>
+    <boolean name="isLogin" value="true" />
+</map>

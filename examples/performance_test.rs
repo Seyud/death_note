@@ -1,7 +1,7 @@
-use death_note::identification::coolapk_identifier::CoolapkIdentifier;
-use death_note::identification::manager::IdentificationManager;
-use death_note::identification::qq_identifier::QQAsyncIdentifier;
-use death_note::identification::telegram_identifier::TelegramIdentifier;
+use death_note::identification::coolapk_identifier::CoolapkShinigamiEye;
+use death_note::identification::manager::ShinigamiEyeManager;
+use death_note::identification::qq_identifier::QQShinigamiEye;
+use death_note::identification::telegram_identifier::TelegramShinigamiEye;
 use std::time::Instant;
 use tokio::time::Duration;
 
@@ -10,19 +10,19 @@ async fn main() {
     println!("🔍 异步并行识别系统性能测试");
     println!("========================================");
 
-    // 创建识别管理器
-    let mut manager = IdentificationManager::new();
-    manager.set_timeout(Duration::from_secs(5));
+    // 创建死神之眼管理器
+    let mut manager = ShinigamiEyeManager::new();
+    manager.set_vision_duration(Duration::from_secs(5));
 
-    // 添加各种识别器
-    manager.add_identifier(CoolapkIdentifier::new());
-    manager.add_identifier(TelegramIdentifier::new());
-    manager.add_identifier(QQAsyncIdentifier::new());
+    // 添加各种死神之眼
+    manager.add_shinigami_eye(CoolapkShinigamiEye::new());
+    manager.add_shinigami_eye(TelegramShinigamiEye::new());
+    manager.add_shinigami_eye(QQShinigamiEye::new());
 
     println!("🚀 启动并行识别...");
 
     let start = Instant::now();
-    let results = manager.run_all().await;
+    let results = manager.activate_all().await;
     let duration = start.elapsed();
 
     println!("⚡ 并行识别完成！");
@@ -32,7 +32,18 @@ async fn main() {
     for (name, results) in results {
         println!("   - {}: {} 个结果", name, results.len());
         for result in results {
-            println!("     └─ UID: {} (来源: {})", result.uid(), result.source());
+            let status = if result.is_blacklisted() {
+                "(黑名单)"
+            } else {
+                "(正常)"
+            };
+            println!(
+                "     └─ UID: {} (来源: {}) (寿命: {}年) {}",
+                result.name(),
+                result.source(),
+                result.lifespan(),
+                status
+            );
         }
     }
 
