@@ -23,12 +23,28 @@ def add_android_target():
         sys.exit(1)
 
 def run_fmt_and_clippy():
-    print("运行 cargo fmt 和 clippy...")
+    print("检查代码格式...")
     try:
         # 确保在项目根目录执行cargo命令
         project_root = os.path.dirname(os.path.abspath(__file__))
-        subprocess.run(["cargo", "fmt"], check=True, cwd=project_root)
+        
+        # 先检查是否需要格式化
+        fmt_check_result = subprocess.run(["cargo", "fmt", "--", "--check"], 
+                                        cwd=project_root, 
+                                        capture_output=True, 
+                                        text=True)
+        
+        if fmt_check_result.returncode == 0:
+            print("代码格式检查通过，无需格式化")
+        else:
+            print("检测到代码格式问题，正在格式化...")
+            subprocess.run(["cargo", "fmt"], check=True, cwd=project_root)
+            print("代码格式化完成")
+        
+        # 运行clippy检查
+        print("运行 clippy 检查...")
         subprocess.run(["cargo", "clippy", "--", "-D", "warnings"], check=True, cwd=project_root)
+        print("clippy 检查通过")
     except subprocess.CalledProcessError as e:
         print(f"代码格式或检查失败: {e}")
         sys.exit(1)
