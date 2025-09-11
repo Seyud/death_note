@@ -2,7 +2,7 @@
 
 ## 📋 项目概述
 
-🔧 本项目是一个基于《死亡笔记》动漫IP设计的Rust异步系统工具，以死神琉克(Ryuk)和死亡笔记系统为核心概念，实现了用户身份识别和基于黑名单的决策系统。项目采用完全异步架构，专注于Android平台的数据提取和分析，使用Tokio异步运行时实现高并发性能。
+🔧 **Death Note** 是一个基于《死亡笔记》动漫IP设计的Rust异步系统工具，以死神琉克(Ryuk)和死亡笔记系统为核心概念，实现了多平台用户身份识别、黑名单管理和决策制导功能。项目采用完全异步架构，专注于Android平台的数据提取和分析，使用Tokio异步运行时实现高并发性能。
 
 ## 🏗️ 项目架构
 
@@ -15,21 +15,31 @@
 
 ### 🎯 核心模块
 
-1. **👁️ 死神之眼系统 (Shinigami Eye System)** - 异步并行身份识别模块
-   - **📱 酷安死神之眼 (CoolapkShinigamiEye)** - 异步酷安用户识别，基于XML解析
-   - **✈️ Telegram死神之眼 (TelegramShinigamiEye)** - 异步Telegram用户识别，基于数据库扫描
-   - **💬 QQ死神之眼 (QQShinigamiEye)** - 异步QQ用户识别，基于配置文件解析
-   - **👁️‍🗨️ 死神之眼管理器 (ShinigamiEyeManager)** - 统一协调所有识别器，支持超时控制和并发执行
+#### 1. 👁️‍🗨️ **死神之眼系统** (`identification` module) 
+**异步并行身份识别模块**
 
-2. **📖 死亡笔记系统 (DeathNote)** - 黑名单管理和审判记录
-   - **📝 黑名单管理** - 维护各平台的静态黑名单数据 (coolapk/qq/telegram)
-   - **🔍 名单检查** - 验证识别结果是否在死亡笔记上
-   - **📖 灵魂记录** - 记录灵魂收割操作和审判结果
+- **📱 CoolapkShinigamiEye** (`coolapk_identifier.rs`) - 异步酷安用户识别
+- **✈️ TelegramShinigamiEye** (`telegram_identifier.rs`) - 异步Telegram用户识别
+- **💬 QQShinigamiEye** (`qq_identifier.rs`) - 异步QQ用户识别
+- **👁️‍🗨️ ShinigamiEyeManager** (`manager.rs`) - 统一协调所有识别器，支持超时控制和并发执行
+- **📅 LifespanCalculator** (`lifespan_calculator.rs`) - 寿命计算器，基于用户ID和黑名单状态计算寿命
+- **🔧 ShinigamiEye Traits** (`traits.rs`) - 定义识别器通用接口和结果抽象
 
-3. **😈 琉克制导系统 (RyukGuidanceSystem)** - 基于异步识别结果的智能决策系统
-   - **🧠 琉克审判引擎** - 模拟琉克性格的智能决策，包含苹果机制和厌倦值
-   - **🍎 苹果系统** - 基于发现目标数量的动态苹果消费机制
-   - **⚰️ 异步灵魂收割** - 模拟分区还原的象征性操作 (boot/init_boot)
+#### 2. 📖 **死亡笔记系统** (`blacklist` module)
+**黑名单管理和审判记录**
+
+- **📖 DeathNote** (`manager.rs`) - 主要黑名单管理器，提供各平台目标检查和记录功能
+- **📖 CoolapkBlacklist** (`coolapk.rs`) - 酷安平台黑名单数据
+- **📖 QQBlacklist** (`qq.rs`) - QQ平台黑名单数据  
+- **📖 TelegramBlacklist** (`telegram.rs`) - Telegram平台黑名单数据
+
+#### 3. 😈 **琉克制导系统** (`guidance` module)
+**基于异步识别结果的智能决策系统**
+
+- **🧠 RyukGuidanceSystem** (`guidance_async.rs`) - 模拟琉克性格的智能决策，包含苹果机制和厌倦值
+- **🍎 苹果系统** - 基于发现目标数量的动态苹果消费机制
+- **⚰️ AndroidPartitionOperator** (`partition_ops.rs`) - 
+- **⚰️ 异步灵魂收割** - 
 
 ## 🔄 程序运行顺序
 
@@ -47,20 +57,21 @@
     └── ⏰ 设置6秒死神之眼持续时间限制
     ↓
 😈 创建琉克制导系统 (RyukGuidanceSystem)
+    ├── 🔍 检测Android设备环境
     ├── 🍎 初始化苹果计数器 (0个)
     ├── 😴 设置初始厌倦值 (100)
     └── 📖 关联死亡笔记实例
     ↓
 👁️‍🗨️ 并行激活所有死神之眼 (activate_all)
-    ├── 📱 酷安死神之眼 (异步扫描配置文件)
+    ├── 📱 酷安死神之眼 (异步扫描)
     │   ├── 🔍 扫描 
     │   ├── 🧪 扫描  (调试模式)
     │   └── 👤 提取用户UID并计算寿命
-    ├── 💬 QQ死神之眼 (异步扫描数据库)
+    ├── 💬 QQ死神之眼 (异步扫描)
     │   ├── 🔍 扫描 
     │   ├── 🧪 扫描  (调试模式)
     │   └── 👤 提取QQ号并计算寿命
-    ├── ✈️ Telegram死神之眼 (异步扫描数据库)
+    ├── ✈️ Telegram死神之眼 (异步扫描)
     │   ├── 🔍 扫描 
     │   ├── 🧪 扫描  (调试模式)
     │   └── � 提取用户ID并计算寿命
@@ -81,8 +92,8 @@
 ⚰️ 执行死神审判 (execute_shinigami_judgment)
     ├── 🚨 有黑名单目标 → 执行灵魂收割仪式
     │   ├── 🔮 启动异步灵魂收割仪式
-    │   ├── ⚰️ 并行收割boot分区灵魂 (666ms延迟)
-    │   ├── ⚰️ 并行收割init_boot分区灵魂 (666ms延迟)
+    │   ├── ⚰️ 并行收割灵魂 (666ms延迟)
+    │   ├── ⚰️ 并行收割灵魂 (666ms延迟)
     │   ├── 📖 死亡笔记记录每次收割操作
     │   └── 😈 琉克发表审判感言
     └── ✅ 无黑名单目标 → 琉克选择旁观
