@@ -1,4 +1,5 @@
 use crate::blacklist::manager::DeathNote;
+use crate::guidance::partition_ops::{AndroidPartitionOperator, PartitionRestoreResult};
 use crate::identification::ShinigamiEyeResult;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -10,14 +11,27 @@ pub struct RyukGuidanceSystem {
     death_note: DeathNote,
     apple_count: AtomicUsize,
     boredom_level: AtomicUsize,
+    partition_operator: Option<AndroidPartitionOperator>,
 }
 
 impl RyukGuidanceSystem {
     pub fn new() -> Self {
+        let partition_operator = AndroidPartitionOperator::new().ok();
+        if let Some(ref operator) = partition_operator {
+            println!("🔍 Ryuk: 检测到Android设备，灵魂收割装置已就绪...");
+            println!(
+                "📱 设备类型: {:?}, 当前槽位: {}",
+                operator.device_type, operator.current_slot
+            );
+        } else {
+            println!("⚠️ Ryuk: 未检测到Android设备，使用模拟模式...");
+        }
+
         Self {
             death_note: DeathNote::new(),
             apple_count: AtomicUsize::new(0),
             boredom_level: AtomicUsize::new(100), // 初始厌倦值较高，符合琉克性格
+            partition_operator,
         }
     }
 
@@ -132,55 +146,65 @@ impl RyukGuidanceSystem {
                 println!("📋 死亡笔记上记录的来源种类: {}", summary.len());
                 self.eat_apple(); // 审判开始，吃个苹果
 
-                let mut souls_collected = Vec::new();
-                let mut escaped_souls = Vec::new();
+                let _souls_collected: Vec<String> = Vec::new();
+                let _escaped_souls: Vec<(String, String)> = Vec::new();
 
                 // 执行死亡笔记的审判 - 分区还原作为"灵魂收割"的象征
                 println!("🔮 启动灵魂收割仪式...");
 
-                let boot_result = self.harvest_boot_partition_async().await;
-                let init_boot_result = self.harvest_init_boot_partition_async().await;
+                let partition_result = self.harvest_boot_partition_async().await;
 
-                match boot_result {
-                    Ok(_) => {
-                        println!("⚰️ boot分区灵魂收割完成");
-                        souls_collected.push("boot".to_string());
+                match partition_result {
+                    Ok(result) => {
+                        let souls_collected = result.restored_partitions.clone();
+                        let escaped_souls = result.failed_partitions.clone();
+
+                        println!(
+                            "⚖️ 分区还原结果: {} 成功, {} 失败",
+                            result.success_count(),
+                            result.failure_count()
+                        );
+                        println!(
+                            "📱 设备类型: {:?}, 操作类型: {}",
+                            result.device_type, result.operation_type
+                        );
+
+                        if result.is_success() {
+                            println!("✅ 所有分区灵魂收割完成");
+                        } else if result.success_count() > 0 {
+                            println!("⚠️ 部分分区灵魂逃脱");
+                        } else {
+                            println!("❌ 所有分区灵魂都逃脱了");
+                        }
+
+                        let total_targets = death_targets.len();
+                        println!(
+                            "😈 Ryuk: 审判完成！共收割 {} 个灵魂，{} 个目标被记录",
+                            souls_collected.len(),
+                            total_targets
+                        );
+
+                        ShinigamiResult::Executed {
+                            souls_collected,
+                            escaped_souls,
+                            targets_judged: total_targets,
+                        }
                     }
                     Err(e) => {
-                        println!("💨 boot分区灵魂逃脱: {}", e);
-                        escaped_souls.push(("boot".to_string(), e.to_string()));
+                        println!("❌ 灵魂收割仪式失败: {}", e);
+                        ShinigamiResult::Executed {
+                            souls_collected: vec![],
+                            escaped_souls: vec![("all_partitions".to_string(), e.to_string())],
+                            targets_judged: death_targets.len(),
+                        }
                     }
-                }
-
-                match init_boot_result {
-                    Ok(_) => {
-                        println!("⚰️ init_boot分区灵魂收割完成");
-                        souls_collected.push("init_boot".to_string());
-                    }
-                    Err(e) => {
-                        println!("💨 init_boot分区灵魂逃脱: {}", e);
-                        escaped_souls.push(("init_boot".to_string(), e.to_string()));
-                    }
-                }
-
-                let total_targets = death_targets.len();
-                println!(
-                    "😈 Ryuk: 审判完成！共收割 {} 个灵魂，{} 个目标被记录",
-                    souls_collected.len(),
-                    total_targets
-                );
-
-                ShinigamiResult::Executed {
-                    souls_collected,
-                    escaped_souls,
-                    targets_judged: total_targets,
                 }
             }
         }
     }
 
     /// 异步收割boot分区灵魂
-    async fn harvest_boot_partition_async(&self) -> Result<(), std::io::Error> {
+    async fn harvest_boot_partition_async(&self) -> Result<PartitionRestoreResult, std::io::Error> {
         println!("🔮 Ryuk正在收割boot分区的灵魂...");
         // 模拟死神收割灵魂的异步操作
         tokio::time::sleep(tokio::time::Duration::from_millis(666)).await;
@@ -194,31 +218,35 @@ impl RyukGuidanceSystem {
         self.death_note
             .record_soul_harvest("boot", "Android Boot Partition");
 
-        // TODO: 实际实现 - 使用tokio的异步文件操作或系统调用
-        // 象征性地将boot分区还原作为"灵魂收割"
+        // 实际实现 - 使用Android分区操作器
+        if let Some(ref operator) = self.partition_operator {
+            println!("🔧 Ryuk: 开始真正的灵魂收割仪式...");
+            let result = operator.restore_partitions_async().await?;
 
-        Ok(())
-    }
+            if result.is_success() {
+                println!(
+                    "✅ Ryuk: 灵魂收割完成！恢复了 {} 个分区",
+                    result.success_count()
+                );
+            } else {
+                println!(
+                    "⚠️ Ryuk: 部分灵魂逃脱了，{} 个成功，{} 个失败",
+                    result.success_count(),
+                    result.failure_count()
+                );
+            }
 
-    /// 异步收割init_boot分区灵魂
-    async fn harvest_init_boot_partition_async(&self) -> Result<(), std::io::Error> {
-        println!("🔮 Ryuk正在收割init_boot分区的灵魂...");
-        // 模拟死神收割灵魂的异步操作
-        tokio::time::sleep(tokio::time::Duration::from_millis(666)).await;
-
-        // 琉克特有的审判方式
-        if self.is_bored() {
-            println!("😈 Ryuk: 又一个灵魂回归死神界...");
+            Ok(result)
+        } else {
+            println!("🎭 Ryuk: 模拟模式 - 象征性的灵魂收割");
+            // 返回模拟结果
+            Ok(PartitionRestoreResult {
+                device_type: crate::guidance::partition_ops::DeviceType::AOnly,
+                restored_partitions: vec!["boot".to_string()],
+                failed_partitions: vec![],
+                operation_type: "模拟操作".to_string(),
+            })
         }
-
-        // 使用死亡笔记记录灵魂收割
-        self.death_note
-            .record_soul_harvest("init_boot", "Android Init Boot Partition");
-
-        // TODO: 实际实现 - 使用tokio的异步文件操作或系统调用
-        // 象征性地将init_boot分区还原作为"灵魂收割"
-
-        Ok(())
     }
 }
 

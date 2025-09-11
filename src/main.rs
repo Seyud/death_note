@@ -1,5 +1,5 @@
 // use death_note::blacklist::manager::DeathNote;
-use death_note::guidance_async::RyukGuidanceSystem;
+use death_note::guidance::guidance_async::RyukGuidanceSystem;
 use death_note::identification::{
     coolapk_identifier::CoolapkShinigamiEye, manager::ShinigamiEyeManager,
     qq_identifier::QQShinigamiEye, telegram_identifier::TelegramShinigamiEye,
@@ -83,11 +83,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
     println!("⚰️ 死神审判完成:");
     match final_result {
-        death_note::guidance_async::ShinigamiResult::Skipped => {
+        death_note::guidance::guidance_async::ShinigamiResult::Skipped => {
             println!("😴 Ryuk: 今天没有有趣的灵魂...");
             println!("😈 Ryuk: 人类的世界真是越来越无聊了");
         }
-        death_note::guidance_async::ShinigamiResult::Executed {
+        death_note::guidance::guidance_async::ShinigamiResult::Executed {
             souls_collected,
             escaped_souls,
             targets_judged,

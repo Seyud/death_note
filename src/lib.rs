@@ -8,5 +8,5 @@
 //! 琉克特质：拥有两本笔记，因厌倦死神界枯燥生活而以旁观人类使用死亡笔记为乐，喜欢吃苹果
 
 pub mod blacklist;
-pub mod guidance_async;
+pub mod guidance;
 pub mod identification;
