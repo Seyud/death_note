@@ -1,3 +1,4 @@
+// 使用对应模块中重新导出的常量
 use super::{coolapk::DEATH_NOTE_COOLAPK, qq::DEATH_NOTE_QQ, telegram::DEATH_NOTE_TELEGRAM};
 
 /// 死亡笔记管理器

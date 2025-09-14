@@ -1,9 +1,5 @@
-//! 死亡笔记名Telegram页
-//! 被写在死亡笔记上的Telegram用户
+//! 死亡笔记Telegram页
+//! 黑名单数据从构建时配置文件中生成
 
-pub const DEATH_NOTE_TELEGRAM: &[&str] = &[
-    "100000000",  // 被琉克记录的Telegram用户1
-    "1234567890", // 被琉克记录的Telegram用户2
-    "8888888888", // 被琉克记录的Telegram用户3
-    "9999999999", // 被琉克记录的Telegram用户4
-];
+// 引入构建时生成的黑名单数据
+include!(concat!(env!("OUT_DIR"), "/blacklist_data.rs"));

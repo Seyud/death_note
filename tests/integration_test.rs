@@ -1,7 +1,7 @@
 //! 寿命和苹果机制集成测试
 
 use death_note::blacklist::manager::DeathNote;
-use death_note::guidance_async::{DeathNoteDecision, RyukGuidanceSystem};
+use death_note::guidance::{DeathNoteDecision, RyukGuidanceSystem};
 use death_note::identification::lifespan_calculator::LifespanCalculator;
 use death_note::identification::traits::{GenericShinigamiEyeResult, ShinigamiEyeResult};
 use std::collections::HashMap;

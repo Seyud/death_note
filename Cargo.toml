@@ -12,5 +12,8 @@ async-trait = "0.1"
 futures = "0.3"
 rand = "0.8"
 
+[build-dependencies]
+toml = "0.8"
+
 [target.'cfg(target_os = "android")'.dependencies]
 ndk-glue = "0.7"
