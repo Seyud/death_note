@@ -4,3 +4,6 @@
 # wiki
 **/wiki/
 **/*wiki*/
+
+# cargo config
+.cargo/config.toml
