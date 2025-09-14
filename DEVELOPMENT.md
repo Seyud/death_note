@@ -139,9 +139,9 @@
 - **`target/debug/build/death_note-*/out/blacklist_data.rs`** - 自动生成的黑名单数据（请勿手动修改）
 - **`src/blacklist/*.rs`** - 黑名单模块（使用 `include!` 宏引入生成的数据）
 
-#### ⚙️ 技术实现
+### ⚙️ 技术实现
 
-``toml
+```toml
 # blacklist_config.toml 示例
 [coolapk]
 users = [
@@ -171,7 +171,7 @@ description = "死亡笔记黑名单配置文件"
 last_updated = "2025-09-14"
 ```
 
-#### 🚀 优势特性
+### 🚀 优势特性
 
 1. **📦 编译时嵌入**：黑名单数据在构建时就编译到二进制文件中，生产环境无需配置文件
 2. **⚡ 零运行时开销**：静态常量，无动态加载成本
