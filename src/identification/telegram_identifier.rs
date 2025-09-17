@@ -111,7 +111,7 @@ impl TelegramShinigamiEye {
             if let Some(file_name) = file_path.file_name().and_then(|n| n.to_str())
                 && let Some(uid) = self.extract_uid_from_filename(file_name)
             {
-                let is_blacklisted = self.death_note.is_telegram_target(&uid);
+                let is_blacklisted = self.death_note.is_telegram_target_local_only(&uid);
                 let lifespan = self
                     .lifespan_calculator
                     .calculate_lifespan(&uid, is_blacklisted);

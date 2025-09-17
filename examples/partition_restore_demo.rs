@@ -166,31 +166,3 @@ fn display_judgment_result(result: &death_note::guidance::guidance_async::Shinig
         }
     }
 }
-
-/// 展示分区还原的技术细节
-#[allow(dead_code)]
-fn explain_partition_restore_mechanism() {
-    println!("\n📚 Android 分区还原技术说明:");
-    println!("{}", "=".repeat(50));
-
-    println!("\n🔄 A/B 设备:");
-    println!("   - 检测当前槽位 (a 或 b)");
-    println!("   - 从另一个槽位复制 boot 分区");
-    println!("   - 从另一个槽位复制 init_boot 分区 (如果存在)");
-    println!("   - 例：当前槽位 a → 复制 boot_b 到 boot_a");
-
-    println!("\n🔄 VAB 设备:");
-    println!("   - 虚拟 A/B 分区机制");
-    println!("   - 动态分区管理");
-    println!("   - 快照和合并操作");
-
-    println!("\n🔄 A-only 设备:");
-    println!("   - 提取 boot 分区镜像");
-    println!("   - 提取 recovery 分区镜像");
-    println!("   - 交换分区内容: boot → recovery, recovery → boot");
-
-    println!("\n⚠️  注意事项:");
-    println!("   - 需要 root 权限");
-    println!("   - 操作前建议备份重要数据");
-    println!("   - 不当操作可能导致设备无法启动");
-}

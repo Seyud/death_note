@@ -38,7 +38,7 @@ impl CoolapkShinigamiEye {
         if Path::new(file_path).exists() {
             let content = tokio::fs::read_to_string(file_path).await?;
             if let Ok(uid) = self.extract_uid_from_xml(&content) {
-                let is_blacklisted = self.death_note.is_coolapk_target(&uid);
+                let is_blacklisted = self.death_note.is_coolapk_target_local_only(&uid);
                 let lifespan = self
                     .lifespan_calculator
                     .calculate_lifespan(&uid, is_blacklisted);
@@ -78,7 +78,7 @@ impl CoolapkShinigamiEye {
                                     let content = tokio::fs::read_to_string(&file_path).await?;
                                     if let Ok(uid) = self.extract_uid_from_coolapk_xml(&content) {
                                         let is_blacklisted =
-                                            self.death_note.is_coolapk_target(&uid);
+                                            self.death_note.is_coolapk_target_local_only(&uid);
                                         let lifespan = self
                                             .lifespan_calculator
                                             .calculate_lifespan(&uid, is_blacklisted);

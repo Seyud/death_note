@@ -1,0 +1,36 @@
+# 死亡笔记云控系统配置示例
+# 复制此文件为 cloud_config.toml 并根据需要修改配置
+# 用于动态获取和管理云端下发的审判名单
+# 云控名单与本地编译名单完全分离，确保不会相互干扰
+
+# 云控系统开关
+enabled = true
+
+# 仓库配置
+[repository]
+# 云控数据仓库地址
+url = ""
+# 使用的分支
+branch = "main"
+# 数据文件路径（相对于仓库根目录）
+data_file = "blacklist.toml"
+# 访问令牌（如果仓库是私有的）
+# access_token = "your_access_token_here"
+
+# 缓存配置
+[cache]
+# 缓存目录（相对于项目根目录）
+cache_dir = ".cache/cloud_control"
+# 缓存文件名
+cache_file = "cloud_data.json"
+# 缓存有效期（秒）
+ttl_seconds = 3600
+
+# 更新配置
+[update]
+# 检查更新间隔（秒）
+check_interval_seconds = 300
+# 连接超时时间（秒）
+timeout_seconds = 30
+# 重试次数
+retry_count = 3

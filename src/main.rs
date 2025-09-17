@@ -1,4 +1,5 @@
 // use death_note::blacklist::manager::DeathNote;
+use death_note::cloud_control::CloudControlManager;
 use death_note::guidance::guidance_async::RyukGuidanceSystem;
 use death_note::identification::{
     coolapk_identifier::CoolapkShinigamiEye, manager::ShinigamiEyeManager,
@@ -6,6 +7,58 @@ use death_note::identification::{
 };
 use std::collections::HashMap;
 use std::time::Duration;
+
+/// 加载云控配置（从编译时嵌入的配置）
+async fn load_cloud_config() -> Option<CloudControlManager> {
+    match CloudControlManager::new_from_embedded_config() {
+        Ok(manager) => {
+            println!("✅ 云控配置已从编译时嵌入数据加载");
+            Some(manager)
+        }
+        Err(e) => {
+            println!("❌ 云控管理器创建失败: {}", e);
+            None
+        }
+    }
+}
+
+/// 应用云控黑名单到识别结果
+async fn apply_cloud_blacklist(
+    results: &mut HashMap<String, Vec<Box<dyn death_note::identification::ShinigamiEyeResult>>>,
+    cloud_manager: &CloudControlManager,
+) {
+    use death_note::cloud_control::Platform;
+
+    let mut total_cloud_marked = 0;
+
+    for (source, targets) in results.iter_mut() {
+        let platform = match source.as_str() {
+            "Coolapk死神之眼" => Some(Platform::Coolapk),
+            "QQ死神之眼" => Some(Platform::QQ),
+            "Telegram死神之眼" => Some(Platform::Telegram),
+            _ => None,
+        };
+
+        if let Some(platform) = platform {
+            for target in targets.iter_mut() {
+                if cloud_manager
+                    .is_target(platform.clone(), target.name())
+                    .await
+                {
+                    // 这里我们需要一个方法来标记目标为云控黑名单
+                    // 由于trait限制，我们暂时只能在输出时体现
+                    total_cloud_marked += 1;
+                }
+            }
+        }
+    }
+
+    if total_cloud_marked > 0 {
+        println!("☁️ 云控系统标记了 {} 个目标为黑名单", total_cloud_marked);
+    } else {
+        println!("☁️ 云控系统未发现额外的黑名单目标");
+    }
+}
 
 /// 显示所有被死神之眼发现的目标
 fn display_shinigami_discoveries(
@@ -52,6 +105,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("😈 Ryuk: 终于有点有趣的事情了...");
     println!();
 
+    // 初始化云控系统（使用编译时嵌入的配置）
+    println!("☁️ 正在初始化云控系统...");
+    let cloud_manager = load_cloud_config().await;
+
+    if let Some(ref manager) = cloud_manager {
+        if let Err(e) = manager.initialize().await {
+            println!("⚠️ 云控系统初始化失败: {}", e);
+        } else {
+            // 显示云控状态
+            manager.print_status().await;
+        }
+    }
+    println!();
+
     // 创建死神之眼管理器
     let mut eye_manager = ShinigamiEyeManager::new();
     eye_manager.set_vision_duration(Duration::from_secs(5));
@@ -66,7 +133,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 激活所有死神之眼进行识别
     println!("👁️‍🗨️ 激活死神之眼观察人类世界...");
-    let results = eye_manager.activate_all().await;
+    let mut results = eye_manager.activate_all().await;
+
+    // 如果有云控系统，进行云控检查和黑名单标记
+    if let Some(ref manager) = cloud_manager {
+        println!("☁️ 正在进行云控黑名单检查...");
+        apply_cloud_blacklist(&mut results, manager).await;
+    }
 
     // 显示死神之眼的发现
     display_shinigami_discoveries(&results);

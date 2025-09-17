@@ -45,7 +45,7 @@ async fn test_lifespan_and_apple_mechanism() {
         normal_user.to_string(),
         "酷安".to_string(),
         normal_lifespan,
-        death_note.is_coolapk_target(normal_user),
+        death_note.is_coolapk_target_local_only(normal_user),
     )));
 
     // 添加黑名单用户
@@ -53,7 +53,7 @@ async fn test_lifespan_and_apple_mechanism() {
         blacklisted_user.to_string(),
         "酷安".to_string(),
         blacklisted_lifespan,
-        death_note.is_coolapk_target(blacklisted_user),
+        death_note.is_coolapk_target_local_only(blacklisted_user),
     )));
 
     results.insert("测试".to_string(), test_results);

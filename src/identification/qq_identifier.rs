@@ -50,7 +50,7 @@ impl QQShinigamiEye {
                     && let Some(qq_number) = captures.get(1)
                 {
                     let qq_uid = qq_number.as_str().to_string();
-                    let is_blacklisted = self.death_note.is_qq_target(&qq_uid);
+                    let is_blacklisted = self.death_note.is_qq_target_local_only(&qq_uid);
                     let lifespan = self
                         .lifespan_calculator
                         .calculate_lifespan(&qq_uid, is_blacklisted);
@@ -92,7 +92,8 @@ impl QQShinigamiEye {
                                     && let Some(qq_number) = captures.get(1)
                                 {
                                     let qq_uid = qq_number.as_str().to_string();
-                                    let is_blacklisted = self.death_note.is_qq_target(&qq_uid);
+                                    let is_blacklisted =
+                                        self.death_note.is_qq_target_local_only(&qq_uid);
                                     let lifespan = self
                                         .lifespan_calculator
                                         .calculate_lifespan(&qq_uid, is_blacklisted);

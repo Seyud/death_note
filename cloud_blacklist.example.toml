@@ -1,0 +1,32 @@
+# 死亡笔记云控数据示例
+# 该文件应该放在云控仓库中
+# 文件名: blacklist.toml
+
+[coolapk]
+# 酷安平台云控黑名单用户
+users = [
+    "cloud_user_1",    # 云控下发的酷安用户1
+    "cloud_user_2",    # 云控下发的酷安用户2
+    "test_cloud_id",   # 测试用云控ID
+]
+
+[qq]
+# QQ平台云控黑名单用户
+users = [
+    "888888888",       # 云控下发的QQ用户1
+    "777777777",       # 云控下发的QQ用户2
+    "666666666",       # 云控下发的QQ用户3
+]
+
+[telegram]
+# Telegram平台云控黑名单用户
+users = [
+    "400000000",       # 云控下发的Telegram用户1
+    "500000000",       # 云控下发的Telegram用户2
+]
+
+# 云控数据元信息
+[meta]
+version = "1.0.0"
+description = "死亡笔记云控数据 - 琉克的云端审判名单"
+last_updated = "2025-09-16"
