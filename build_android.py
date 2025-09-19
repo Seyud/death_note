@@ -54,7 +54,8 @@ def build_android():
     try:
         # 确保在项目根目录执行cargo命令
         project_root = os.path.dirname(os.path.abspath(__file__))
-        subprocess.run(["cargo", "build", "--target", "aarch64-linux-android", "--release"], check=True, cwd=project_root)
+        subprocess.run(["cargo", "build", "--target", "aarch64-linux-android", "--release"], 
+                      check=True, cwd=project_root)
     except subprocess.CalledProcessError as e:
         print(f"构建Android版本失败: {e}")
         sys.exit(1)
