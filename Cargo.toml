@@ -1,6 +1,6 @@
 [package]
 name = "death_note"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
@@ -21,3 +21,36 @@ toml = "0.9"
 
 [target.'cfg(target_os = "android")'.dependencies]
 ndk-glue = "0.7"
+
+# 性能优化配置
+[profile.dev]
+# 开发模式优化：启用基础优化以提升开发体验
+opt-level = 1          # 启用基本优化，平衡编译速度和运行性能
+incremental = true     # 启用增量编译，加速重新编译
+codegen-units = 256    # 增加代码生成单元，提升并行编译速度
+
+[profile.release]
+# 发布模式优化：最大化运行时性能
+opt-level = 3          # 最高优化级别
+lto = true             # 启用链接时优化（Link Time Optimization）
+codegen-units = 1      # 单一代码生成单元，最大化优化效果
+panic = "abort"        # 使用abort替代unwind，减少二进制大小和运行时开销
+strip = true           # 移除调试符号，减少二进制大小
+overflow-checks = false # 禁用溢出检查，提升运行时性能
+
+# 依赖包优化配置
+[profile.dev.package."*"]
+opt-level = 2          # 为所有依赖包启用更高优化级别
+
+# 特定依赖的优化配置（针对性能关键的依赖）
+[profile.dev.package.regex]
+opt-level = 3          # regex库启用最高优化
+
+[profile.dev.package.quick-xml]
+opt-level = 3          # XML解析库启用最高优化
+
+[profile.dev.package.reqwest]
+opt-level = 3          # HTTP客户端库启用最高优化
+
+[profile.dev.package.tokio]
+opt-level = 3          # 异步运行时启用最高优化
