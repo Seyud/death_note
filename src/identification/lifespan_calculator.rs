@@ -36,7 +36,7 @@ impl LifespanCalculator {
             // 为非黑名单用户生成50-80年的随机寿命
             let seed = self.generate_seed_from_uid(uid);
             let mut rng = StdRng::seed_from_u64(seed);
-            rng.gen_range(50..=80)
+            rng.random_range(50..=80)
         }
     }
 

@@ -128,7 +128,7 @@ impl CoolapkShinigamiEye {
                         if is_au_u && let Ok(Event::Text(ref t)) = reader.read_event_into(&mut buf)
                         {
                             let value = t
-                                .unescape()
+                                .decode()
                                 .map_err(|e| format!("XML转义错误: {}", e))?
                                 .to_string();
                             return Ok(value);
@@ -169,7 +169,7 @@ impl CoolapkShinigamiEye {
 
                         if is_uid && let Ok(Event::Text(ref t)) = reader.read_event_into(&mut buf) {
                             let value = t
-                                .unescape()
+                                .decode()
                                 .map_err(|e| format!("XML转义错误: {}", e))?
                                 .to_string();
                             return Ok(value);
