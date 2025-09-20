@@ -1,6 +1,7 @@
 use crate::cloud_control::{
     cache::CloudControlCache,
-    client::{CloudControlClient, CloudControlError},
+    client::CloudControlClient,
+    error::CloudControlError,
     types::{CloudControlConfig, CloudControlData, Platform},
 };
 use std::collections::HashMap;
@@ -21,8 +22,7 @@ impl CloudControlManager {
     /// 创建新的云控管理器
     pub fn new(config: CloudControlConfig) -> Result<Self, CloudControlError> {
         let client = CloudControlClient::new(config.clone())?;
-        let cache = CloudControlCache::new(&config)
-            .map_err(|e| CloudControlError::Other(format!("创建缓存失败: {}", e)))?;
+        let cache = CloudControlCache::new(&config)?;
 
         Ok(Self {
             config,
@@ -35,7 +35,9 @@ impl CloudControlManager {
     /// 从编译时嵌入的配置创建云控管理器
     /// 这允许程序在生产环境中无需 cloud_config.toml 文件
     pub fn new_from_embedded_config() -> Result<Self, CloudControlError> {
-        let config = crate::cloud_control::get_embedded_config();
+        let config_str = crate::cloud_control::get_embedded_config();
+        let config: CloudControlConfig =
+            toml::from_str(config_str).map_err(CloudControlError::EmbeddedConfigParse)?;
         Self::new(config)
     }
 
@@ -171,9 +173,7 @@ impl CloudControlManager {
         *data = None;
 
         // 清除缓存
-        self.cache
-            .clear()
-            .map_err(|e| CloudControlError::Other(format!("清除缓存失败: {}", e)))?;
+        self.cache.clear()?;
 
         println!("🗑️ 所有云控数据已清除");
         Ok(())

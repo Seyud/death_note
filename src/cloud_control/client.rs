@@ -1,37 +1,9 @@
-use crate::cloud_control::types::{CloudControlConfig, CloudControlData, DataSource, Platform};
+use crate::cloud_control::{
+    error::CloudControlError,
+    types::{CloudControlConfig, CloudControlData, DataSource, Platform},
+};
 use std::collections::HashMap;
-use std::error::Error;
-use std::fmt;
 use tokio::time::{Duration, timeout};
-
-/// 云控客户端错误类型
-#[derive(Debug)]
-pub enum CloudControlError {
-    /// 网络错误
-    NetworkError(String),
-    /// 解析错误
-    ParseError(String),
-    /// 配置错误
-    ConfigError(String),
-    /// 超时错误
-    TimeoutError,
-    /// 其他错误
-    Other(String),
-}
-
-impl fmt::Display for CloudControlError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            CloudControlError::NetworkError(msg) => write!(f, "网络错误: {}", msg),
-            CloudControlError::ParseError(msg) => write!(f, "解析错误: {}", msg),
-            CloudControlError::ConfigError(msg) => write!(f, "配置错误: {}", msg),
-            CloudControlError::TimeoutError => write!(f, "请求超时"),
-            CloudControlError::Other(msg) => write!(f, "其他错误: {}", msg),
-        }
-    }
-}
-
-impl Error for CloudControlError {}
 
 /// 云控客户端
 pub struct CloudControlClient {
@@ -49,17 +21,15 @@ impl CloudControlClient {
         // 如果有访问令牌，添加到默认头部
         if let Some(token) = &config.repository.access_token {
             let mut headers = reqwest::header::HeaderMap::new();
-            headers.insert(
-                reqwest::header::AUTHORIZATION,
-                reqwest::header::HeaderValue::from_str(&format!("token {}", token))
-                    .map_err(|e| CloudControlError::ConfigError(format!("Invalid token: {}", e)))?,
-            );
+            let header_value = reqwest::header::HeaderValue::from_str(&format!("token {}", token))
+                .map_err(|_| {
+                    CloudControlError::InvalidCloudData("无效的访问令牌格式".to_string())
+                })?;
+            headers.insert(reqwest::header::AUTHORIZATION, header_value);
             builder = builder.default_headers(headers);
         }
 
-        let http_client = builder
-            .build()
-            .map_err(|e| CloudControlError::NetworkError(format!("创建HTTP客户端失败: {}", e)))?;
+        let http_client = builder.build()?;
 
         Ok(Self {
             config,
@@ -79,27 +49,23 @@ impl CloudControlClient {
             self.http_client.get(&url).send(),
         )
         .await
-        .map_err(|_| CloudControlError::TimeoutError)?
-        .map_err(|e| CloudControlError::NetworkError(format!("请求失败: {}", e)))?;
+        .map_err(|_| CloudControlError::InvalidCloudData("请求超时".to_string()))??;
 
         if !response.status().is_success() {
-            return Err(CloudControlError::NetworkError(format!(
-                "HTTP错误: {}",
-                response.status()
-            )));
+            return Err(CloudControlError::NetworkRequest(
+                response.error_for_status().unwrap_err(),
+            ));
         }
 
-        let content = response
-            .text()
-            .await
-            .map_err(|e| CloudControlError::NetworkError(format!("读取响应失败: {}", e)))?;
+        let content = response.text().await?;
 
         self.parse_data(&content)
     }
 
     /// 带重试机制获取数据
     pub async fn fetch_data_with_retry(&self) -> Result<CloudControlData, CloudControlError> {
-        let mut last_error = CloudControlError::Other("未知错误".to_string());
+        let mut last_error =
+            CloudControlError::InvalidCloudData("获取数据过程中出现未知错误".to_string());
 
         for attempt in 1..=self.config.update.retry_count {
             match self.fetch_data().await {
@@ -153,7 +119,7 @@ impl CloudControlClient {
             let parts: Vec<&str> = repo_url.trim_end_matches(".git").split('/').collect();
 
             if parts.len() < 2 {
-                return Err(CloudControlError::ConfigError(
+                return Err(CloudControlError::InvalidCloudData(
                     "无效的Gitee仓库URL格式".to_string(),
                 ));
             }
@@ -166,7 +132,7 @@ impl CloudControlClient {
                 owner, repo, branch, file_path
             ))
         } else {
-            Err(CloudControlError::ConfigError(
+            Err(CloudControlError::InvalidCloudData(
                 "暂不支持的代码托管平台".to_string(),
             ))
         }
@@ -174,8 +140,7 @@ impl CloudControlClient {
 
     /// 解析TOML数据
     fn parse_data(&self, content: &str) -> Result<CloudControlData, CloudControlError> {
-        let toml_value: toml::Value = toml::from_str(content)
-            .map_err(|e| CloudControlError::ParseError(format!("TOML解析失败: {}", e)))?;
+        let toml_value: toml::Value = toml::from_str(content)?;
 
         let mut platforms = HashMap::new();
 

@@ -1,7 +1,9 @@
-use crate::cloud_control::types::{CacheEntry, CloudControlConfig, CloudControlData};
+use crate::cloud_control::{
+    error::CloudControlError,
+    types::{CacheEntry, CloudControlConfig, CloudControlData},
+};
 use serde_json;
 use std::fs;
-use std::io;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
@@ -14,7 +16,7 @@ pub struct CloudControlCache {
 
 impl CloudControlCache {
     /// 创建新的缓存管理器
-    pub fn new(config: &CloudControlConfig) -> io::Result<Self> {
+    pub fn new(config: &CloudControlConfig) -> Result<Self, CloudControlError> {
         let cache_dir = PathBuf::from(&config.cache.cache_dir);
         let cache_file = cache_dir.join(&config.cache.cache_file);
 
@@ -60,15 +62,18 @@ impl CloudControlCache {
     }
 
     /// 保存数据到缓存
-    pub fn save(&self, data: CloudControlData, etag: Option<String>) -> io::Result<()> {
+    pub fn save(
+        &self,
+        data: CloudControlData,
+        etag: Option<String>,
+    ) -> Result<(), CloudControlError> {
         let entry = CacheEntry {
             data,
             cached_at: SystemTime::now(),
             etag,
         };
 
-        let content = serde_json::to_string_pretty(&entry)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let content = serde_json::to_string_pretty(&entry)?;
 
         fs::write(&self.cache_file, content)?;
         println!("💾 云控数据已保存到缓存");
@@ -76,7 +81,7 @@ impl CloudControlCache {
     }
 
     /// 清除缓存
-    pub fn clear(&self) -> io::Result<()> {
+    pub fn clear(&self) -> Result<(), CloudControlError> {
         if self.cache_file.exists() {
             fs::remove_file(&self.cache_file)?;
             println!("🗑️ 云控缓存已清除");

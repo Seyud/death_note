@@ -1,3 +1,4 @@
+use anyhow::Context;
 // use death_note::blacklist::manager::DeathNote;
 use death_note::cloud_control::CloudControlManager;
 use death_note::guidance::guidance_async::RyukGuidanceSystem;
@@ -9,15 +10,16 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 /// 加载云控配置（从编译时嵌入的配置）
-async fn load_cloud_config() -> Option<CloudControlManager> {
+async fn load_cloud_config() -> anyhow::Result<Option<CloudControlManager>> {
     match CloudControlManager::new_from_embedded_config() {
         Ok(manager) => {
             println!("✅ 云控配置已从编译时嵌入数据加载");
-            Some(manager)
+            Ok(Some(manager))
         }
         Err(e) => {
+            // 对于主程序，云控是可选功能，可以容忍创建失败，只打印错误信息。
             println!("❌ 云控管理器创建失败: {}", e);
-            None
+            Ok(None)
         }
     }
 }
@@ -100,18 +102,18 @@ fn display_shinigami_discoveries(
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     println!("📓 死亡笔记打开了...");
     println!("😈 Ryuk: 终于有点有趣的事情了...");
     println!();
 
     // 初始化云控系统（使用编译时嵌入的配置）
     println!("☁️ 正在初始化云控系统...");
-    let cloud_manager = load_cloud_config().await;
+    let cloud_manager = load_cloud_config().await.context("无法加载云控配置")?;
 
     if let Some(ref manager) = cloud_manager {
         if let Err(e) = manager.initialize().await {
-            println!("⚠️ 云控系统初始化失败: {}", e);
+            println!("⚠️ 云控系统初始化失败: {:#}", e);
         } else {
             // 显示云控状态
             manager.print_status().await;

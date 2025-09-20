@@ -6,6 +6,7 @@
 pub mod cache;
 pub mod client;
 pub mod embedded_config;
+pub mod error;
 pub mod manager;
 pub mod types;
 
@@ -13,5 +14,6 @@ pub mod types;
 pub use cache::CloudControlCache;
 pub use client::CloudControlClient;
 pub use embedded_config::get_embedded_config;
+pub use error::CloudControlError;
 pub use manager::CloudControlManager;
 pub use types::{CloudControlConfig, CloudControlData, Platform};
