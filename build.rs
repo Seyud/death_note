@@ -9,7 +9,7 @@ fn main() {
     let cloud_config_dest_path = Path::new(&out_dir).join("cloud_config_data.rs");
 
     // 读取黑名单配置文件
-    let config_content = fs::read_to_string("blacklist_config.toml").expect(
+    let config_content = fs::read_to_string("config/blacklist_config.toml").expect(
         "无法读取 blacklist_config.toml 配置文件，请先从 blacklist_config.example.toml 复制并按需修改"
     );
 
@@ -27,7 +27,7 @@ fn main() {
     generate_cloud_config(&cloud_config_dest_path);
 
     // 告诉 Cargo 当配置文件改变时重新运行构建脚本
-    println!("cargo:rerun-if-changed=blacklist_config.toml");
+    println!("cargo:rerun-if-changed=config/blacklist_config.toml");
     println!("cargo:rerun-if-changed=cloud_config.toml");
 }
 
