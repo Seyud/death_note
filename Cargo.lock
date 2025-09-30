@@ -159,7 +159,7 @@ dependencies = [
 
 [[package]]
 name = "death_note"
-version = "0.2.0"
+version = "0.2.7"
 dependencies = [
  "anyhow",
  "async-trait",

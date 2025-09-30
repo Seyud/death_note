@@ -1,6 +1,7 @@
 [package]
 name = "death_note"
-version = "0.2.0"
+version = "0.2.7"
+authors = ["Seyud"]
 edition = "2024"
 
 [dependencies]
