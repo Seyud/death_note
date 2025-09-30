@@ -10,7 +10,7 @@ fn main() {
 
     // 读取黑名单配置文件
     let config_content = fs::read_to_string("config/blacklist_config.toml").expect(
-        "无法读取 blacklist_config.toml 配置文件，请先从 blacklist_config.example.toml 复制并按需修改"
+        "无法读取 blacklist_config.toml 配置文件，请先从 config/examples/blacklist_config.example.toml 复制并按需修改"
     );
 
     // 解析 TOML 配置
