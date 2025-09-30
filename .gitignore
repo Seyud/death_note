@@ -12,3 +12,6 @@
 .cache/
 cloud_config.toml
 cloud_control/cache/
+
+# blacklist config
+blacklist_config.toml
