@@ -85,6 +85,38 @@ def copy_binary_to_output():
         print(f"复制二进制文件失败: {e}")
         sys.exit(1)
 
+def compress_binary_with_upx():
+    print("使用UPX压缩二进制文件...")
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    upx_path = "D:/upx/upx.exe"
+    binary_path = os.path.join(project_root, "output", "death_note")
+
+    if not os.path.isfile(upx_path):
+        print(f"未找到UPX执行文件: {upx_path}")
+        sys.exit(1)
+
+    if not os.path.isfile(binary_path):
+        print(f"未找到待压缩的二进制文件: {binary_path}")
+        sys.exit(1)
+
+    result = subprocess.run([
+        upx_path,
+        binary_path,
+    ], capture_output=True, text=True)
+
+    if result.stdout:
+        print(result.stdout.strip())
+    if result.stderr:
+        print(result.stderr.strip())
+
+    if result.returncode == 0:
+        print("UPX压缩完成")
+    elif "AlreadyPackedException" in result.stdout:
+        print("二进制文件已被UPX压缩，跳过")
+    else:
+        print("UPX压缩失败")
+        sys.exit(result.returncode)
+
 def main():
     print("Death Note 构建脚本 (仅64位)")
 
@@ -93,6 +125,7 @@ def main():
     run_fmt_and_clippy()
     build_android()
     copy_binary_to_output()
+    compress_binary_with_upx()
     print("构建完成！")
 
 if __name__ == "__main__":

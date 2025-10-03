@@ -9,7 +9,6 @@
 .cargo/config.toml
 
 # cloud control
-.cache/
 cloud_config.toml
 cloud_control/cache/
 
