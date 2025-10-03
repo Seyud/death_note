@@ -1,0 +1,9 @@
+# Android 构建脚本配置示例
+# 复制此文件为 ../build_android.toml 并根据实际环境修改
+
+[paths]
+# NDK 根目录路径，可以使用绝对路径或相对项目根目录的相对路径
+ndk = "D:/android-ndk"
+
+# UPX 可执行文件路径
+upx = "D:/upx/upx.exe"

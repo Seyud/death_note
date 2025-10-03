@@ -1,16 +1,63 @@
 #!/usr/bin/env python3
 
 import os
+import shutil
 import subprocess
 import sys
-import shutil
 
-def check_ndk_path():
-    ndk_path = "D:/android-ndk"
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:  # pragma: no cover
+    try:
+        import tomli as tomllib  # type: ignore[assignment]
+    except ModuleNotFoundError:  # pragma: no cover
+        print("未找到 tomllib/tomli，请使用 Python 3.11+ 或运行 `pip install tomli`")
+        sys.exit(1)
+
+def load_build_config():
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(project_root, "config", "build_android.toml")
+
+    if not os.path.isfile(config_path):
+        print(f"未找到配置文件: {config_path}")
+        sys.exit(1)
+
+    with open(config_path, "rb") as f:
+        try:
+            return tomllib.load(f)
+        except (tomllib.TOMLDecodeError, ValueError) as exc:
+            print(f"解析配置文件失败: {exc}")
+            sys.exit(1)
+
+
+def get_required_path(config: dict, key: str) -> str:
+    paths_section = config.get("paths")
+    if not isinstance(paths_section, dict):
+        print("配置文件缺少 `paths` 配置段")
+        sys.exit(1)
+
+    value = paths_section.get(key)
+    if not value:
+        print(f"配置文件缺少 `paths.{key}` 项")
+        sys.exit(1)
+    if not isinstance(value, str):
+        print(f"`paths.{key}` 必须为字符串")
+        sys.exit(1)
+
+    resolved = os.path.expandvars(os.path.expanduser(value))
+    if not os.path.isabs(resolved):
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        resolved = os.path.join(project_root, resolved)
+    return os.path.normpath(resolved)
+
+
+def check_ndk_path(config):
+    ndk_path = get_required_path(config, "ndk")
     if not os.path.isdir(ndk_path):
-        print("未找到NDK路径，请确保NDK安装在D:/android-ndk")
+        print(f"未找到NDK路径: {ndk_path}")
         sys.exit(1)
     print("NDK路径检查通过")
+
 
 def add_android_target():
     print("添加Android 64位目标...")
@@ -85,10 +132,10 @@ def copy_binary_to_output():
         print(f"复制二进制文件失败: {e}")
         sys.exit(1)
 
-def compress_binary_with_upx():
+def compress_binary_with_upx(config):
     print("使用UPX压缩二进制文件...")
     project_root = os.path.dirname(os.path.abspath(__file__))
-    upx_path = "D:/upx/upx.exe"
+    upx_path = get_required_path(config, "upx")
     binary_path = os.path.join(project_root, "output", "death_note")
 
     if not os.path.isfile(upx_path):
@@ -118,14 +165,16 @@ def compress_binary_with_upx():
         sys.exit(result.returncode)
 
 def main():
-    print("Death Note 构建脚本 (仅64位)")
+    print("Death Note 构建脚本")
 
-    check_ndk_path()
+    config = load_build_config()
+
+    check_ndk_path(config)
     add_android_target()
     run_fmt_and_clippy()
     build_android()
     copy_binary_to_output()
-    compress_binary_with_upx()
+    compress_binary_with_upx(config)
     print("构建完成！")
 
 if __name__ == "__main__":
