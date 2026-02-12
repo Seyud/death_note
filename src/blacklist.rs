@@ -6,6 +6,7 @@
 pub mod coolapk;
 pub mod qq;
 pub mod telegram;
+pub mod wechat;
 
 // 死亡笔记管理器
 pub mod manager;

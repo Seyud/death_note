@@ -145,7 +145,12 @@ impl CloudControlClient {
         let mut platforms = HashMap::new();
 
         // 解析各平台数据
-        for platform in [Platform::Coolapk, Platform::QQ, Platform::Telegram] {
+        for platform in [
+            Platform::Coolapk,
+            Platform::QQ,
+            Platform::Telegram,
+            Platform::WeChat,
+        ] {
             if let Some(platform_data) = toml_value.get(platform.as_str())
                 && let Some(users) = platform_data.get("users").and_then(|v| v.as_array())
             {

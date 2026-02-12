@@ -9,6 +9,7 @@ pub enum Platform {
     Coolapk,
     QQ,
     Telegram,
+    WeChat,
 }
 
 impl Platform {
@@ -18,6 +19,7 @@ impl Platform {
             Platform::Coolapk => "coolapk",
             Platform::QQ => "qq",
             Platform::Telegram => "telegram",
+            Platform::WeChat => "wechat",
         }
     }
 }

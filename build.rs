@@ -81,6 +81,19 @@ fn generate_blacklist_code(config: &toml::Value) -> String {
         code.push_str("];\n\n");
     }
 
+    if let Some(wechat) = config.get("wechat")
+        && let Some(users) = wechat.get("users").and_then(|v| v.as_array())
+    {
+        code.push_str("/// WeChat平台黑名单数据\n");
+        code.push_str("pub const DEATH_NOTE_WECHAT: &[&str] = &[\n");
+        for user in users {
+            if let Some(user_str) = user.as_str() {
+                code.push_str(&format!("    \"{}\",\n", user_str));
+            }
+        }
+        code.push_str("];\n\n");
+    }
+
     // 添加配置元信息
     if let Some(meta) = config.get("meta") {
         code.push_str("/// 配置元信息\n");

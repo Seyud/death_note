@@ -1,5 +1,7 @@
-// 使用对应模块中重新导出的常量
-use super::{coolapk::DEATH_NOTE_COOLAPK, qq::DEATH_NOTE_QQ, telegram::DEATH_NOTE_TELEGRAM};
+use super::{
+    coolapk::DEATH_NOTE_COOLAPK, qq::DEATH_NOTE_QQ, telegram::DEATH_NOTE_TELEGRAM,
+    wechat::DEATH_NOTE_WECHAT,
+};
 use crate::cloud_control::{CloudControlConfig, CloudControlManager, Platform};
 use std::sync::Arc;
 
@@ -96,6 +98,18 @@ impl DeathNote {
         local_match || cloud_match
     }
 
+    pub async fn is_wechat_target(&self, wechat_id: &str) -> bool {
+        let local_match = DEATH_NOTE_WECHAT.contains(&wechat_id);
+
+        let cloud_match = if let Some(cloud_manager) = &self.cloud_manager {
+            cloud_manager.is_target(Platform::WeChat, wechat_id).await
+        } else {
+            false
+        };
+
+        local_match || cloud_match
+    }
+
     /// 仅检查本地编译的酷安名单（保留原始功能）
     pub fn is_coolapk_target_local_only(&self, username: &str) -> bool {
         DEATH_NOTE_COOLAPK.contains(&username)
@@ -109,6 +123,10 @@ impl DeathNote {
     /// 仅检查本地编译的QQ名单（保留原始功能）
     pub fn is_qq_target_local_only(&self, qq_number: &str) -> bool {
         DEATH_NOTE_QQ.contains(&qq_number)
+    }
+
+    pub fn is_wechat_target_local_only(&self, wechat_id: &str) -> bool {
+        DEATH_NOTE_WECHAT.contains(&wechat_id)
     }
 
     /// 仅检查云控酷安名单
@@ -133,6 +151,14 @@ impl DeathNote {
     pub async fn is_qq_target_cloud_only(&self, qq_number: &str) -> bool {
         if let Some(cloud_manager) = &self.cloud_manager {
             cloud_manager.is_target(Platform::QQ, qq_number).await
+        } else {
+            false
+        }
+    }
+
+    pub async fn is_wechat_target_cloud_only(&self, wechat_id: &str) -> bool {
+        if let Some(cloud_manager) = &self.cloud_manager {
+            cloud_manager.is_target(Platform::WeChat, wechat_id).await
         } else {
             false
         }
@@ -167,6 +193,7 @@ impl DeathNote {
         println!("    酷安: {} 个ID", DEATH_NOTE_COOLAPK.len());
         println!("    QQ: {} 个ID", DEATH_NOTE_QQ.len());
         println!("    Telegram: {} 个ID", DEATH_NOTE_TELEGRAM.len());
+        println!("    WeChat: {} 个ID", DEATH_NOTE_WECHAT.len());
 
         // 云控数据统计
         if let Some(cloud_manager) = &self.cloud_manager {

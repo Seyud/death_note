@@ -11,6 +11,7 @@ pub mod manager;
 pub mod qq_identifier;
 pub mod telegram_identifier;
 pub mod traits;
+pub mod wechat_identifier;
 
 // 导出死神之眼功能
 pub use coolapk_identifier::CoolapkShinigamiEye;
@@ -18,5 +19,6 @@ pub use lifespan_calculator::LifespanCalculator;
 pub use manager::ShinigamiEyeManager;
 pub use qq_identifier::QQShinigamiEye;
 pub use telegram_identifier::TelegramShinigamiEye;
+pub use wechat_identifier::WeChatShinigamiEye;
 // 仅导出必要的结果trait
 pub use traits::ShinigamiEyeResult;

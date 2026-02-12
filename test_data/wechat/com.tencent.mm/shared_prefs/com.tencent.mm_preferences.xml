@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="login_weixin_username">wxid_test_123456</string>
+    <string name="last_login_bind_mobile">13800000000</string>
+    <string name="last_login_alias">test_wechat_id</string>
+    <string name="last_login_nick_name">TestNick</string>
+</map>

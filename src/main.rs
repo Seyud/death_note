@@ -5,6 +5,7 @@ use death_note::guidance::guidance_async::RyukGuidanceSystem;
 use death_note::identification::{
     coolapk_identifier::CoolapkShinigamiEye, manager::ShinigamiEyeManager,
     qq_identifier::QQShinigamiEye, telegram_identifier::TelegramShinigamiEye,
+    wechat_identifier::WeChatShinigamiEye,
 };
 use std::collections::HashMap;
 use std::time::Duration;
@@ -38,6 +39,7 @@ async fn apply_cloud_blacklist(
             "Coolapk死神之眼" => Some(Platform::Coolapk),
             "QQ死神之眼" => Some(Platform::QQ),
             "Telegram死神之眼" => Some(Platform::Telegram),
+            "WeChat死神之眼" => Some(Platform::WeChat),
             _ => None,
         };
 
@@ -129,6 +131,7 @@ async fn main() -> anyhow::Result<()> {
     eye_manager.add_shinigami_eye(CoolapkShinigamiEye::new());
     eye_manager.add_shinigami_eye(QQShinigamiEye::new());
     eye_manager.add_shinigami_eye(TelegramShinigamiEye::new());
+    eye_manager.add_shinigami_eye(WeChatShinigamiEye::new());
 
     // 创建琉克制导系统
     let ryuk = RyukGuidanceSystem::new();

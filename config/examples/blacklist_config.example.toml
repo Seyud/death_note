@@ -30,6 +30,9 @@ users = [
     "300000000",  # 被琉克记录的Telegram用户3
 ]
 
+[wechat]
+users = []
+
 # 配置元信息
 [meta]
 version = "1.0"
